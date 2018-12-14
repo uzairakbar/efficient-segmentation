@@ -83,6 +83,7 @@ class Solver(object):
                 loss = 0
                 for s in range(inputs.size()[0]):
                     loss += self.loss_func(outputs[s].view(23, -1).transpose(1, 0), targets[s].view(-1))
+                loss /= inputs.size()[0]
                 
                 # loss = self.loss_func(outputs, targets)
                 loss.backward()
