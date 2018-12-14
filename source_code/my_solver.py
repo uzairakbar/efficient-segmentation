@@ -79,7 +79,12 @@ class Solver(object):
 
                 optim.zero_grad()
                 outputs = model(inputs)
-                loss = self.loss_func(outputs, targets)
+                
+                loss = 0
+                for s in range(inputs.size()[0]):
+                    loss += self.loss_func(outputs[s].view(23, -1).transpose(1, 0), targets[s].view(-1))
+                
+                # loss = self.loss_func(outputs, targets)
                 loss.backward()
                 optim.step()
 
