@@ -215,7 +215,7 @@ class dSolver(object):
             # TRAINING
 
             for i, (inputs, targets) in enumerate(train_loader, 1):
-                inputs, targets = Variable(inputs), Variable(targets)
+                inputs, targets = Variable(inputs), Variable(targets, requires_grad=False)
                 if model.is_cuda:
                     inputs, targets = inputs.cuda(), targets.cuda()
 
@@ -252,7 +252,7 @@ class dSolver(object):
             val_scores = []
             model.eval()
             for inputs, targets in val_loader:
-                inputs, targets = Variable(inputs), Variable(targets)
+                inputs, targets = Variable(inputs), Variable(targets, requires_grad=False)
                 if model.is_cuda:
                     inputs, targets = inputs.cuda(), targets.cuda()
 
