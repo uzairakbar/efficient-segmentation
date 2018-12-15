@@ -174,7 +174,7 @@ class dSolver(object):
             one_hot = torch.cuda.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         else:
             one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_() 
-        one_hot.scatter_(1, targets_extend, 1)
+        one_hot.scatter_(1, targets_extend.cuda(), 1)
         return one_hot
 
     def _reset_histories(self):
