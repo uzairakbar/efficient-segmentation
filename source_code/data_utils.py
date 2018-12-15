@@ -134,12 +134,12 @@ class SegmentationData(data.Dataset):
         random.seed(hflipseed)
         img=hflip(img)
         random.seed(hflipseed)
-        target=hflip(img)
+        target=hflip(target)
         
         random.seed(vflipseed)
         img=vflip(img)
         random.seed(vflipseed)
-        target=vflip(img)
+        target=vflip(target)
         
         img = to_tensor(img)
         img = normalize(img)
