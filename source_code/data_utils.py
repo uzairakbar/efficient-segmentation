@@ -129,7 +129,7 @@ class SegmentationData(data.Dataset):
         # target = rot(target)
         
         # Constrained rotation
-        if random.random() > 5:
+        if random.random() > 0.5:
             angle = 90
             img = F.rotate(img, angle)
             target = F.rotate(target, angle)
