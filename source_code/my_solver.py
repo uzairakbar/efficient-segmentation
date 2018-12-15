@@ -244,16 +244,16 @@ class dSolver(object):
                 
                 
                 # SET YOUR OWN NUMBER OF CLASSES HERE
-                targets = self.one_hot(targets=targets)
-                inputs, targets = Variable(inputs), Variable(targets)
+                OHtargets = self.one_hot(targets=targets)
+                inputs, OHtargets = Variable(inputs), Variable(OHtargets)
                 if model.is_cuda:
-                    inputs, targets = inputs.cuda(), targets.cuda()
+                    inputs, targets, OHtargets = inputs.cuda(), targets.cuda(), OHtargets.cuda()
                 
 
                 optim.zero_grad()
                 outputs = model(inputs)
                 
-                loss = self.loss_func(outputs, targets)
+                loss = self.loss_func(outputs, OHtargets)
                 loss.backward()
                 optim.step()
 
@@ -285,13 +285,13 @@ class dSolver(object):
             for inputs, targets in val_loader:
                 
                 ############## ONE HOT GETTING BUSY HERE
-                targets = self.one_hot(targets=targets)
-                inputs, targets = Variable(inputs), Variable(targets)
+                OHtargets = self.one_hot(targets=targets)
+                inputs, OHtargets = Variable(inputs), Variable(OHtargets)
                 if model.is_cuda:
-                    inputs, targets = inputs.cuda(), targets.cuda()
+                    inputs, targets, OHtargets = inputs.cuda(), targets.cuda(), OHtargets.cuda()
 
                 outputs = model.forward(inputs)
-                loss = self.loss_func(outputs, targets)
+                loss = self.loss_func(outputs, OHtargets)
                 val_losses.append(loss.data.cpu().numpy())
 
                 _, preds = torch.max(outputs, 1)
