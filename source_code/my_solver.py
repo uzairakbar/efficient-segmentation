@@ -164,7 +164,7 @@ class dSolver(object):
 
         self._reset_histories()
         
-    def one_hot(self, targets, C=23):
+    def one_hot(self, targets, C=24):
 #         targets_extend=targets.clone()
 #         mask = targets>=0
 #         targets_extend.masked_scatter_(mask, targets)
