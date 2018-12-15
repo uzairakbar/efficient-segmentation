@@ -88,15 +88,26 @@ class SegmentationData(data.Dataset):
                                  std=[0.3769369 , 0.36186826, 0.36188436]) # my shit
 
         to_tensor = transforms.ToTensor()
+        rand_jitter=transforms.ColorJitter()
+        # rand_hflip=transforms.RandomHorizontalFlip()
+        # rand_vflip=transforms.RandomVerticalFlip()
+        # rand_rot=transforms.RandomRotation()
+        
+        # x=int (np.random.uniform(0,360,1))
+        # image=image.rorate(image,x)
+        # label=label.rorate(label,x)
+        
         img_id = self.image_names[index].replace('.bmp', '')
 
         img = Image.open(os.path.join(self.root_dir_name,
                                       'images',
                                       img_id + '.bmp')).convert('RGB')
-        center_crop = transforms.CenterCrop(240) # my commenting shit
+        ### center_crop = transforms.CenterCrop(240) # my commenting shit ##############################################
         # random_crop = transforms.RandomCrop(224)
 
-        img = center_crop(img)
+        ### img = center_crop(img) ################################################################################
+        img=rand_jitter(img)
+        
         img = to_tensor(img)
         # y = img
         #print('tensor')
@@ -111,7 +122,7 @@ class SegmentationData(data.Dataset):
 
 
         # target = random_crop(target)
-        target = center_crop(target)
+        ### target = center_crop(target) #######################################################################
         # target = to_tensor(target) ###
         target = np.array(target, dtype=np.int64) ###############
 
