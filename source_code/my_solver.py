@@ -233,10 +233,11 @@ class dSolver(object):
                 
                 
                 # SET YOUR OWN NUMBER OF CLASSES HERE
-                targets = self.one_hot(targets=targets)
-                inputs, targets = Variable(inputs), Variable(targets)
                 if model.is_cuda:
                     inputs, targets = inputs.cuda(), targets.cuda()
+                targets = self.one_hot(targets=targets)
+                inputs, targets = Variable(inputs), Variable(targets)
+                
 
                 optim.zero_grad()
                 outputs = model(inputs)
@@ -273,10 +274,11 @@ class dSolver(object):
             for inputs, targets in val_loader:
                 
                 ############## ONE HOT GETTING BUSY HERE
-                targets = self.one_hot(targets=targets)
-                inputs, targets = Variable(inputs), Variable(targets)
                 if model.is_cuda:
                     inputs, targets = inputs.cuda(), targets.cuda()
+                targets = self.one_hot(targets=targets)
+                inputs, targets = Variable(inputs), Variable(targets)
+                
 
                 outputs = model.forward(inputs)
                 loss = self.loss_func(outputs, targets)
