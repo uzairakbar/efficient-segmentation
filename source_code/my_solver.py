@@ -165,20 +165,27 @@ class dSolver(object):
         self._reset_histories()
         
     def one_hot(self, targets, C=23):
-        targets_extend=targets.clone()
-        mask = targets>=0
-        targets_extend.masked_scatter_(mask, targets)
-        targets_extend.unsqueeze_(1) # convert to Nx1xHxW
-#         if torch.cuda.is_available():
-#             targets_extend.cuda()
-#             one_hot = torch.cuda.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
-#         else:
-#             one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_() 
-#         one_hot.scatter_(1, targets_extend.cuda(), 1)
-        one_hot = torch.cuda.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_() 
-        one_hot.scatter_(1, targets_extend.cuda(), 1)
-        one_hot.cpu()
-        targets_extend.cpu()
+#         targets_extend=targets.clone()
+#         mask = targets>=0
+#         targets_extend.masked_scatter_(mask, targets)
+#         targets_extend.unsqueeze_(1) # convert to Nx1xHxW
+# #         if torch.cuda.is_available():
+# #             targets_extend.cuda()
+# #             one_hot = torch.cuda.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
+# #             one_hot.scatter_(1, targets_extend.cuda(), 1)
+# #         else:
+# #             one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_() 
+# #             one_hot.scatter_(1, targets_extend, 1)
+        
+#         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_() 
+#         one_hot.scatter_(1, targets_extend, 1)
+        
+        targets_extend = targets.clone()
+        targets_extend.unsqueeze_(1)
+        targets_extend += 1
+        one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
+        one_hot.scatter_(1, labels, 1)
+        one_hot = one_hot[:, 1:]
         return one_hot
 
     def _reset_histories(self):
