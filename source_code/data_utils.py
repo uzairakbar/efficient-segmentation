@@ -7,6 +7,8 @@ import torch.utils.data as data
 from PIL import Image
 from torchvision import transforms
 
+import random
+
 import _pickle as pickle
 
 ########### TEMP #################
@@ -88,7 +90,17 @@ class SegmentationData(data.Dataset):
                                  std=[0.3769369 , 0.36186826, 0.36188436]) # my shit
 
         to_tensor = transforms.ToTensor()
-        rand_jitter=transforms.ColorJitter()
+        vflipseed = random.randint(0,2**32)
+        hflipseed = random.randint(0,2**32)
+        cropseed = random.randint(0,2**32)
+        hflip=transforms.RandomHorizontalFlip()
+        vflip=transforms.RandomVerticalFlip()
+        rotseed = random.randint(0,2**32)
+        rot=transforms.RandomRotation(90)
+        # center_crop = transforms.CenterCrop(240) # my commenting shit ##############################################
+        random_crop = transforms.RandomCrop(240)
+        
+        # rand_jitter=transforms.ColorJitter()
         # rand_hflip=transforms.RandomHorizontalFlip()
         # rand_vflip=transforms.RandomVerticalFlip()
         # rand_rot=transforms.RandomRotation()
@@ -102,27 +114,46 @@ class SegmentationData(data.Dataset):
         img = Image.open(os.path.join(self.root_dir_name,
                                       'images',
                                       img_id + '.bmp')).convert('RGB')
-        center_crop = transforms.CenterCrop(240) # my commenting shit ##############################################
-        # random_crop = transforms.RandomCrop(224)
-
-        img = center_crop(img) ################################################################################
-        img=rand_jitter(img)
-        
-        img = to_tensor(img)
-        # y = img
-        #print('tensor')
-        #plt.imshow(y.numpy())
-        img = normalize(img)
-        #print('normalized')
-        #plt.imshow(img.numpy())
-
         target = Image.open(os.path.join(self.root_dir_name,
                                          'targets',
                                          img_id + '_GT.bmp'))
+        
+        random.seed(rotseed)
+        img = rot(img)
+        random.seed(rotseed)
+        target = rot(target)
+        
+        random.seed(cropseed)
+        img = random_crop(img)
+        random.seed(cropseed)
+        target = random_crop(target)
+        # img = center_crop(img) ################################################################################
+        # img=rand_jitter(img)
+        
+        random.seed(hflipseed)
+        img=hflip(img)
+        random.seed(hflipseed)
+        target=hflip(img)
+        
+        random.seed(vflipseed)
+        img=vflip(img)
+        random.seed(vflipseed)
+        target=vflip(img)
+        
+        img = to_tensor(img)
+        img = normalize(img)
+        # y = img
+        #print('tensor')
+        #plt.imshow(y.numpy())
+        
+        #print('normalized')
+        #plt.imshow(img.numpy())
+
+        
 
 
-        # target = random_crop(target)
-        target = center_crop(target) #######################################################################
+        
+        # target = center_crop(target) #######################################################################
         # target = to_tensor(target) ###
         target = np.array(target, dtype=np.int64) ###############
 
