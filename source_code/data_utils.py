@@ -140,6 +140,6 @@ class SegmentationData(data.Dataset):
         # print(target_labels.shape)
         # target_labels = target
 
-        target_labels = to_tensor(target_labels)
+        #target_labels = to_tensor(target_labels)
 
         return img, target_labels
