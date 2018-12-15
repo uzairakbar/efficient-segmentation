@@ -169,7 +169,11 @@ class dSolver(object):
         mask = targets>=0
         targets_extend.masked_scatter_(mask, targets)
         targets_extend.unsqueeze_(1) # convert to Nx1xHxW
-        one_hot = torch.cuda.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
+        if torch.cuda.is_available():
+            targets_extend.cuda()
+            one_hot = torch.cuda.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
+        else:
+            one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_() 
         one_hot.scatter_(1, targets_extend, 1)
         return one_hot
 
