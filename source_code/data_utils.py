@@ -97,9 +97,11 @@ class SegmentationData(data.Dataset):
         vflip=transforms.RandomVerticalFlip()
         rotseed = random.randint(0,2**32)
         rot=transforms.RandomRotation(90)
-        # center_crop = transforms.CenterCrop(240) # my commenting shit ##############################################
+        
         cropseed = random.randint(0,2**32)
-        random_crop = transforms.RandomCrop(240, pad_if_needed=True)
+        # crop = transforms.RandomCrop(240, pad_if_needed=True) # THE RANDOM CROP
+        crop = transforms.CenterCrop(240) # my commenting shit ##############################################
+        
         
         # rand_jitter=transforms.ColorJitter()
         # rand_hflip=transforms.RandomHorizontalFlip()
@@ -119,23 +121,27 @@ class SegmentationData(data.Dataset):
                                          'targets',
                                          img_id + '_GT.bmp'))
         
-        random.seed(rotseed)
-        img = rot(img)
-        random.seed(rotseed)
-        target = rot(target)
+        # ROTATION
+        # random.seed(rotseed)
+        # img = rot(img)
+        # random.seed(rotseed)
+        # target = rot(target)
         
+        # CROP (random or normal)
         random.seed(cropseed)
-        img = random_crop(img)
+        img = crop(img)
         random.seed(cropseed)
-        target = random_crop(target)
+        target = crop(target)
         # img = center_crop(img) ################################################################################
         # img=rand_jitter(img)
         
+        # HORIZONTAL FLIP
         random.seed(hflipseed)
         img=hflip(img)
         random.seed(hflipseed)
         target=hflip(target)
         
+        # VERTICAL FLIP
         random.seed(vflipseed)
         img=vflip(img)
         random.seed(vflipseed)
