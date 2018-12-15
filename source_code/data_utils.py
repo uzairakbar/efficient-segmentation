@@ -92,13 +92,14 @@ class SegmentationData(data.Dataset):
         to_tensor = transforms.ToTensor()
         vflipseed = random.randint(0,2**32)
         hflipseed = random.randint(0,2**32)
-        cropseed = random.randint(0,2**32)
+        
         hflip=transforms.RandomHorizontalFlip()
         vflip=transforms.RandomVerticalFlip()
         rotseed = random.randint(0,2**32)
         rot=transforms.RandomRotation(90)
         # center_crop = transforms.CenterCrop(240) # my commenting shit ##############################################
-        random_crop = transforms.RandomCrop(240)
+        cropseed = random.randint(0,2**32)
+        random_crop = transforms.RandomCrop(240, pad_if_needed=True)
         
         # rand_jitter=transforms.ColorJitter()
         # rand_hflip=transforms.RandomHorizontalFlip()
