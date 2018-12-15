@@ -184,7 +184,7 @@ class dSolver(object):
         targets_extend.unsqueeze_(1)
         targets_extend += 1
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
-        one_hot.scatter_(1, labels, 1)
+        one_hot.scatter_(1, targets_extend, 1)
         one_hot = one_hot[:, 1:]
         return one_hot
 
