@@ -6,6 +6,7 @@ import torch
 import torch.utils.data as data
 from PIL import Image
 from torchvision import transforms
+import torchvision.transforms.functional as F
 
 import random
 
@@ -130,8 +131,8 @@ class SegmentationData(data.Dataset):
         # Constrained rotation
         if random.random() > 5:
             angle = 90
-            img = TF.rotate(img, angle)
-            target = TF.rotate(target, angle)
+            img = F.rotate(img, angle)
+            target = F.rotate(target, angle)
         
         # CROP (random or normal)
         random.seed(cropseed)
