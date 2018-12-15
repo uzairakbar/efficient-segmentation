@@ -164,7 +164,7 @@ class dSolver(object):
 
         self._reset_histories()
         
-    def one_hot(targets, C=2):
+    def one_hot(targets, C=23):
         targets_extend=targets.clone()
         mask = targets>=0
         targets_extend.masked_scatter_(mask, targets)
@@ -229,7 +229,7 @@ class dSolver(object):
                 
                 
                 # SET YOUR OWN NUMBER OF CLASSES HERE
-                targets = self.one_hot(targets, 23)
+                targets = self.one_hot(targets=targets)
                 inputs, targets = Variable(inputs), Variable(targets)
                 if model.is_cuda:
                     inputs, targets = inputs.cuda(), targets.cuda()
