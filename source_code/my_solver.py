@@ -145,7 +145,9 @@ class Solver(object):
         ########################################################################
         print('FINISH.\n')
         return val_acc
-    
+
+
+
 class dSolver(object):
     default_adam_args = {"lr": 1e-4,
                          "betas": (0.9, 0.999),
@@ -161,6 +163,15 @@ class dSolver(object):
         self.loss_func = loss_func
 
         self._reset_histories()
+        
+    def one_hot(targets, C=2):
+        targets_extend=targets.clone()
+        mask = targets>=0
+        targets_extend.masked_scatter_(mask, targets)
+        targets_extend.unsqueeze_(1) # convert to Nx1xHxW
+        one_hot = torch.cuda.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
+        one_hot.scatter_(1, targets_extend, 1) 
+        return one_hot
 
     def _reset_histories(self):
         """
@@ -215,7 +226,11 @@ class dSolver(object):
             # TRAINING
 
             for i, (inputs, targets) in enumerate(train_loader, 1):
-                inputs, targets = Variable(inputs), Variable(targets, requires_grad=False)
+                
+                
+                # SET YOUR OWN NUMBER OF CLASSES HERE
+                targets = self.one_hot(targets, 23)
+                inputs, targets = Variable(inputs), Variable(targets)
                 if model.is_cuda:
                     inputs, targets = inputs.cuda(), targets.cuda()
 
@@ -252,7 +267,7 @@ class dSolver(object):
             val_scores = []
             model.eval()
             for inputs, targets in val_loader:
-                inputs, targets = Variable(inputs), Variable(targets, requires_grad=False)
+                inputs, targets = Variable(inputs), Variable(targets)
                 if model.is_cuda:
                     inputs, targets = inputs.cuda(), targets.cuda()
 
