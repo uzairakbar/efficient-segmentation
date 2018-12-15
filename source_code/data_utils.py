@@ -96,7 +96,7 @@ class SegmentationData(data.Dataset):
         hflip=transforms.RandomHorizontalFlip()
         vflip=transforms.RandomVerticalFlip()
         rotseed = random.randint(0,2**32)
-        rot=transforms.RandomRotation(90)
+        rot=transforms.RandomRotation(90, expand=True)
         
         cropseed = random.randint(0,2**32)
         # crop = transforms.RandomCrop(240, pad_if_needed=True) # THE RANDOM CROP
@@ -121,11 +121,17 @@ class SegmentationData(data.Dataset):
                                          'targets',
                                          img_id + '_GT.bmp'))
         
-        # ROTATION
+        # Random ROTATION
         # random.seed(rotseed)
         # img = rot(img)
         # random.seed(rotseed)
         # target = rot(target)
+        
+        # Constrained rotation
+        if random.random() > 5:
+            angle = 90
+            img = TF.rotate(img, angle)
+            target = TF.rotate(target, angle)
         
         # CROP (random or normal)
         random.seed(cropseed)
