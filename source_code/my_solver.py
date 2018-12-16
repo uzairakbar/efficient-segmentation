@@ -6,12 +6,13 @@ from torch.autograd import Variable
 
 class Dice_Loss(torch.nn.Module):
     
-    def __init__(self):
+    def __init__(self, smooth=1.):
         super(Dice_Loss,self).__init__()
+        self.smooth = smooth
         
     def forward(self, input, target):
         input = torch.sigmoid(input)
-        smooth = 1.
+        smooth = self.smooth
 
         iflat = input.view(-1)
         tflat = target.view(-1)
