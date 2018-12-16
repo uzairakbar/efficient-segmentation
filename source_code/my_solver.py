@@ -4,6 +4,22 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
+class Dice_Loss(torch.nn.Module):
+    
+    def __init__(self):
+        super(Dice_Loss,self).__init__()
+        
+    def forward(self, input, target):
+        input = torch.sigmoid(input)
+        smooth = 1.
+
+        iflat = input.view(-1)
+        tflat = target.view(-1)
+        intersection = (iflat * tflat).sum()
+
+        return 1 - ((2. * intersection + smooth) /
+                  (iflat.sum() + tflat.sum() + smooth))
+
 class Solver(object):
     default_adam_args = {"lr": 1e-4,
                          "betas": (0.9, 0.999),
@@ -165,21 +181,6 @@ class dSolver(object):
         self._reset_histories()
         
     def one_hot(self, targets, C=24):
-#         targets_extend=targets.clone()
-#         mask = targets>=0
-#         targets_extend.masked_scatter_(mask, targets)
-#         targets_extend.unsqueeze_(1) # convert to Nx1xHxW
-# #         if torch.cuda.is_available():
-# #             targets_extend.cuda()
-# #             one_hot = torch.cuda.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
-# #             one_hot.scatter_(1, targets_extend.cuda(), 1)
-# #         else:
-# #             one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_() 
-# #             one_hot.scatter_(1, targets_extend, 1)
-        
-#         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_() 
-#         one_hot.scatter_(1, targets_extend, 1)
-        
         targets_extend = targets.clone()
         targets_extend.unsqueeze_(1)
         targets_extend += 1
