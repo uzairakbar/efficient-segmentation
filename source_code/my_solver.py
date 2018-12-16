@@ -321,9 +321,7 @@ class dSolver(object):
     
 class cSolver(object):
     default_adam_args = {"lr": 1e-4,
-                         "betas": (0.9, 0.999),
-                         "eps": 1e-8,
-                         "weight_decay": 0.0}
+                        "momentum":0.99}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
                  loss_func=torch.nn.CrossEntropyLoss()):
