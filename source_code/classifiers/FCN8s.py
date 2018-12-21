@@ -3,6 +3,10 @@ import os.path as osp
 #import fcn
 import torch.nn as nn
 
+#--- mine
+import numpy as np
+import torch
+
 from .fcn32s import get_upsampling_weight
 
 
