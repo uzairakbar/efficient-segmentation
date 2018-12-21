@@ -241,3 +241,20 @@ class FCN8sAtOnce(FCN8s):
             l2 = getattr(self, name)
             l2.weight.data.copy_(l1.weight.data.view(l2.weight.size()))
             l2.bias.data.copy_(l1.bias.data.view(l2.bias.size()))
+            
+    def save(self, path):
+        """
+        Save model with its parameters to the given path. Conventionally the
+        path should end with "*.model".
+        Inputs:
+        - path: path string
+        """
+        print('Saving model... %s' % path)
+        torch.save(self, path)
+
+    @property
+    def is_cuda(self):
+        """
+        Check if model parameters are allocated on the GPU.
+        """
+        return next(self.parameters()).is_cuda
