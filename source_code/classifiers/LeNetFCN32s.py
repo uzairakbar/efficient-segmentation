@@ -55,9 +55,10 @@ class Inception3(nn.Module):
         self.Mixed_7c = InceptionE(2048)
         
         # OTHER GUYS
-        self.firstDeconv = nn.ConvTranspose2d(2048, 768, 4)
-        self.secondDeconv = nn.ConvTranspose2d(768, 288, 3)
-        self.thirdDeconv = nn.ConvTranspose2d(288, num_classes, 32, stride=8)
+        self.score_fr = nn.Conv2d(2048, num_classes, 1)
+        self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 4, padding=1, stride=2)
+        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 4, padding=1)
+        self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=8)
         # self.fourthDeconv = nn.ConvTranspose2d(num_classes, num_classes, 32, stride=8)
         
         
@@ -141,18 +142,19 @@ class Inception3(nn.Module):
         ### x = self.fc(x)
         ### MY OWN SHIT
         
+        x = self.score_fr(x)
         # NOT MINE NOT MINE
-        x = self.firstDeconv(x)                         # 8.65625 x 8.65625 x 768
+        x = self.upscore32(x)                         # 8.65625 x 8.65625 x 768         ## 14 x 14 x numC
         print("deco1", x.shape)
-        x = self.secondDeconv(x)                        # 10.65625 x 10.65625 x 288
+        x = self.upscore16(x)                        # 10.65625 x 10.65625 x 288        ## 28 x 28 x numC
         print("deco2", x.shape)
-        x = self.thirdDeconv(x)                         # 109.25 x 109.25 x num_classes
+        x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
         print("deco3", x.shape)
         
         # MINE MINE
 #         x = self.score_fr(x)
 #         x = self.upscore(x)
-        x = x[:, :, 19:19 + input.size()[2], 19:19 + input.size()[3]].contiguous()
+        # x = x[:, :, 19:19 + input.size()[2], 19:19 + input.size()[3]].contiguous()
         
         # 1000 (num_classes)
         #if self.training and self.aux_logits:
