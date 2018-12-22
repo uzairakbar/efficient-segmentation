@@ -29,7 +29,7 @@ def inception_v3(pretrained=False, **kwargs):
     return Inception3(**kwargs)
 
 
-class LeNetFCN32s(nn.Module):
+class Inception3(nn.Module):
 
     def __init__(self, num_classes=1000, aux_logits=True, transform_input=False):
         super(Inception3, self).__init__()
