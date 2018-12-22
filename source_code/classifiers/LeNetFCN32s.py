@@ -55,10 +55,10 @@ class Inception3(nn.Module):
         self.Mixed_7c = InceptionE(2048)
         
         # OTHER GUYS
-        self.firstDeconv = nn.Transpose2d(2048, 768, 4)
-        self.secondDeconv = nn.Transpose2d(768, 288, 3)
-        self.thirdDeconv = nn.Transpose2d(288, num_classes, 32, stride=8)
-        # self.fourthDeconv = nn.Transpose2d(num_classes, num_classes, 32, stride=8)
+        self.firstDeconv = nn.ConvTranspose2d(2048, 768, 4)
+        self.secondDeconv = nn.ConvTranspose2d(768, 288, 3)
+        self.thirdDeconv = nn.ConvTranspose2d(288, num_classes, 32, stride=8)
+        # self.fourthDeconv = nn.ConvTranspose2d(num_classes, num_classes, 32, stride=8)
         
         
         # MINE MINE MINE
