@@ -55,7 +55,9 @@ class Inception3(nn.Module):
         self.Mixed_7c = InceptionE(2048)
         
         # OTHER GUYS
-        self.score_fr = nn.Conv2d(2048, num_classes, 1, padding=1)
+        self.score_fr8 = nn.Conv2d(256, num_classes, 1, padding=1)
+        self.score_fr16 = nn.Conv2d(768, num_classes, 1, padding=1)
+        self.score_fr32 = nn.Conv2d(2048, num_classes, 1, padding=1)
         self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8)
         self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=2, padding=3)
         self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 16, stride=8, padding=4)
@@ -108,6 +110,7 @@ class Inception3(nn.Module):
         x = self.Mixed_5b(x)                            # 25.625 x 25.625 x 256
         # 35 x 35 x 256
         x = self.Mixed_5c(x)                            # 25.625 x 25.625 x 288
+        x8 = x
         # 35 x 35 x 288
         print("8s", x.shape)
         x = self.Mixed_5d(x)                            # 25.625 x 25.625 x 288
@@ -121,6 +124,7 @@ class Inception3(nn.Module):
         x = self.Mixed_6d(x)                            # 12.3125 x 12.3125 x 768
         # 17 x 17 x 768
         x = self.Mixed_6e(x)                            # 12.3125 x 12.3125 x 768
+        x16 = x
         # 17 x 17 x 768
         print("16s", x.shape)
         if self.training and self.aux_logits:
@@ -142,12 +146,17 @@ class Inception3(nn.Module):
         ### x = self.fc(x)
         ### MY OWN SHIT
         
-        x = self.score_fr(x)
+        x8 = self.score_fr8(x8)
+        x16 = self.score_fr16(x16)
+        x32 = self.score_fr32(x)
         # NOT MINE NOT MINE
+        x = x32
         x = self.upscore32(x)                         # 8.65625 x 8.65625 x 768         ## 14 x 14 x numC
         print("deco1", x.shape)
+        x = x + x16
         x = self.upscore16(x)                        # 10.65625 x 10.65625 x 288        ## 28 x 28 x numC
         print("deco2", x.shape)
+        x = x + x8
         x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
         print("deco3", x.shape)
         
