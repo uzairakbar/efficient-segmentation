@@ -55,7 +55,7 @@ class Inception3(nn.Module):
         self.Mixed_7c = InceptionE(2048)
         
         # OTHER GUYS
-        self.score_fr8 = nn.Conv2d(288, num_classes, 1, padding=1)
+        self.score_fr8 = nn.Conv2d(288, num_classes, 4, padding=3)
         self.score_fr16 = nn.Conv2d(768, num_classes, 1, padding=1)
         self.score_fr32 = nn.Conv2d(2048, num_classes, 1, padding=1)
         self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8)
