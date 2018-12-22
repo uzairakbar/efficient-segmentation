@@ -55,10 +55,10 @@ class Inception3(nn.Module):
         self.Mixed_7c = InceptionE(2048)
         
         # OTHER GUYS
-        self.score_fr = nn.Conv2d(2048, num_classes, 1)
-        self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 4, padding=1, stride=2)
-        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 4, padding=1)
-        self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=8)
+        self.score_fr = nn.Conv2d(2048, num_classes, 1, padding=1)
+        self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8)
+        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=2, padding=3)
+        self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 16, stride=8, padding=4)
         # self.fourthDeconv = nn.ConvTranspose2d(num_classes, num_classes, 32, stride=8)
         
         
