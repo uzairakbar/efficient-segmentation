@@ -54,9 +54,19 @@ class Inception3(nn.Module):
         self.Mixed_7b = InceptionE(1280)
         self.Mixed_7c = InceptionE(2048)
         
-        self.score_fr = nn.Conv2d(2048, num_classes, 1)
-        self.upscore = nn.ConvTranspose2d(num_classes, num_classes, 64, stride=32,
-                                          bias=False)
+        # OTHER GUYS
+        self.firstDeconv = nn.Transpose2d(2048, 768, 4)
+        self.secondDeconv = nn.Transpose2d(768, 288, 3)
+        self.thirdDeconv = nn.Transpose2d(288, num_classes, 32, stride=8)
+        # self.fourthDeconv = nn.Transpose2d(num_classes, num_classes, 32, stride=8)
+        
+        
+        # MINE MINE MINE
+#         self.score_fr = nn.Conv2d(2048, num_classes, 1)
+#         self.upscore = nn.ConvTranspose2d(num_classes, num_classes, 64, stride=32,
+#                                           bias=False)
+        
+        
         # self.fc = nn.Linear(2048, num_classes)
 
         for m in self.modules():
@@ -72,51 +82,51 @@ class Inception3(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def forward(self, input):
-        x = input
+        x = input           # 224 x 224 x 3
         if self.transform_input:
             x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.229 / 0.5) + (0.485 - 0.5) / 0.5
             x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.224 / 0.5) + (0.456 - 0.5) / 0.5
             x_ch2 = torch.unsqueeze(x[:, 2], 1) * (0.225 / 0.5) + (0.406 - 0.5) / 0.5
             x = torch.cat((x_ch0, x_ch1, x_ch2), 1)
         # 299 x 299 x 3
-        x = self.Conv2d_1a_3x3(x)
+        x = self.Conv2d_1a_3x3(x)                       # 111.5 x 111.5 x 32
         # 149 x 149 x 32
-        x = self.Conv2d_2a_3x3(x)
+        x = self.Conv2d_2a_3x3(x)                       # 109.5 x 109.5 x 32
         # 147 x 147 x 32
-        x = self.Conv2d_2b_3x3(x)
+        x = self.Conv2d_2b_3x3(x)                       # 109.5 x 109.5 x 64
         # 147 x 147 x 64
-        x = F.max_pool2d(x, kernel_size=3, stride=2)
+        x = F.max_pool2d(x, kernel_size=3, stride=2)    # 54.25 x 54.25 x 64
         # 73 x 73 x 64
-        x = self.Conv2d_3b_1x1(x)
+        x = self.Conv2d_3b_1x1(x)                       # 54.25 x 54.25 x 80
         # 73 x 73 x 80
-        x = self.Conv2d_4a_3x3(x)
+        x = self.Conv2d_4a_3x3(x)                       # 52.25 x 52.25 x 192
         # 71 x 71 x 192
-        x = F.max_pool2d(x, kernel_size=3, stride=2)
+        x = F.max_pool2d(x, kernel_size=3, stride=2)    # 25.625 x 25.625 x 192
         # 35 x 35 x 192
-        x = self.Mixed_5b(x)
+        x = self.Mixed_5b(x)                            # 25.625 x 25.625 x 256
         # 35 x 35 x 256
-        x = self.Mixed_5c(x)
+        x = self.Mixed_5c(x)                            # 25.625 x 25.625 x 288
         # 35 x 35 x 288
-        x = self.Mixed_5d(x)
+        x = self.Mixed_5d(x)                            # 25.625 x 25.625 x 288
         # 35 x 35 x 288
-        x = self.Mixed_6a(x)
+        x = self.Mixed_6a(x)                            # 12.3125 x 12.3125 x 768
         # 17 x 17 x 768
-        x = self.Mixed_6b(x)
+        x = self.Mixed_6b(x)                            # 12.3125 x 12.3125 x 768
         # 17 x 17 x 768
-        x = self.Mixed_6c(x)
+        x = self.Mixed_6c(x)                            # 12.3125 x 12.3125 x 768
         # 17 x 17 x 768
-        x = self.Mixed_6d(x)
+        x = self.Mixed_6d(x)                            # 12.3125 x 12.3125 x 768
         # 17 x 17 x 768
-        x = self.Mixed_6e(x)
+        x = self.Mixed_6e(x)                            # 12.3125 x 12.3125 x 768
         # 17 x 17 x 768
         if self.training and self.aux_logits:
             aux = self.AuxLogits(x)
         # 17 x 17 x 768
-        x = self.Mixed_7a(x)
+        x = self.Mixed_7a(x)                            # 5.65625 x 5.65625 x 1280
         # 8 x 8 x 1280
-        x = self.Mixed_7b(x)
+        x = self.Mixed_7b(x)                            # 5.65625 x 5.65625 x 2048
         # 8 x 8 x 2048
-        x = self.Mixed_7c(x)
+        x = self.Mixed_7c(x)                            # 5.65625 x 5.65625 x 2048
         # 8 x 8 x 2048
         ### x = F.avg_pool2d(x, kernel_size=8)
         # 1 x 1 x 2048
@@ -127,8 +137,14 @@ class Inception3(nn.Module):
         ### x = self.fc(x)
         ### MY OWN SHIT
         
-        x = self.score_fr(x)
-        x = self.upscore(x)
+        # NOT MINE NOT MINE
+        x = self.firstDeconv(x)                         # 8.65625 x 8.65625 x 768
+        x = self.secondDeconv(x)                        # 10.65625 x 10.65625 x 288
+        x = self.thirdDeconv(x)                         # 109.25 x 109.25 x num_classes
+        
+        # MINE MINE
+#         x = self.score_fr(x)
+#         x = self.upscore(x)
         x = x[:, :, 19:19 + input.size()[2], 19:19 + input.size()[3]].contiguous()
         
         # 1000 (num_classes)
