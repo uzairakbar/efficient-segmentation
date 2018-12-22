@@ -169,6 +169,23 @@ class Inception3(nn.Module):
         #if self.training and self.aux_logits:
         #    return x, aux
         return x
+    
+    def save(self, path):
+        """
+        Save model with its parameters to the given path. Conventionally the
+        path should end with "*.model".
+        Inputs:
+        - path: path string
+        """
+        print('Saving model... %s' % path)
+        torch.save(self, path)
+
+    @property
+    def is_cuda(self):
+        """
+        Check if model parameters are allocated on the GPU.
+        """
+        return next(self.parameters()).is_cuda
 
 
 class InceptionA(nn.Module):
