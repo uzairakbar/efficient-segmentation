@@ -86,7 +86,7 @@ class Inception3(nn.Module):
 
     def forward(self, input):
         x = input           # 224 x 224 x 3
-        print("input size", x.shape)
+#         print("input size", x.shape)
         if self.transform_input:
             x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.229 / 0.5) + (0.485 - 0.5) / 0.5
             x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.224 / 0.5) + (0.456 - 0.5) / 0.5
@@ -112,7 +112,7 @@ class Inception3(nn.Module):
         x = self.Mixed_5c(x)                            # 25.625 x 25.625 x 288
         x8 = x
         # 35 x 35 x 288
-        print("8s", x.shape)
+#         print("8s", x.shape)
         x = self.Mixed_5d(x)                            # 25.625 x 25.625 x 288
         # 35 x 35 x 288
         x = self.Mixed_6a(x)                            # 12.3125 x 12.3125 x 768
@@ -126,7 +126,7 @@ class Inception3(nn.Module):
         x = self.Mixed_6e(x)                            # 12.3125 x 12.3125 x 768
         x16 = x
         # 17 x 17 x 768
-        print("16s", x.shape)
+#         print("16s", x.shape)
         if self.training and self.aux_logits:
             aux = self.AuxLogits(x)
         # 17 x 17 x 768
@@ -136,7 +136,7 @@ class Inception3(nn.Module):
         # 8 x 8 x 2048
         x = self.Mixed_7c(x)                            # 5.65625 x 5.65625 x 2048
         # 8 x 8 x 2048
-        print("32s", x.shape)
+#         print("32s", x.shape)
         ### x = F.avg_pool2d(x, kernel_size=8)
         # 1 x 1 x 2048
         ### x = F.dropout(x, training=self.training)
@@ -152,13 +152,13 @@ class Inception3(nn.Module):
         # NOT MINE NOT MINE
         x = x32
         x = self.upscore32(x)                         # 8.65625 x 8.65625 x 768         ## 14 x 14 x numC
-        print("deco1", x.shape)
+#         print("deco1", x.shape)
         x = x + x16
         x = self.upscore16(x)                        # 10.65625 x 10.65625 x 288        ## 28 x 28 x numC
-        print("deco2", x.shape)
+#         print("deco2", x.shape)
         x = x + x8
         x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
-        print("deco3", x.shape)
+#         print("deco3", x.shape)
         
         # MINE MINE
 #         x = self.score_fr(x)
