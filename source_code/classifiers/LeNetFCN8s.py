@@ -96,11 +96,21 @@ class LeNetFCN8s(nn.Module):
     def forward(self, input):
         x = input           # 224 x 224 x 3
 #         print("input size", x.shape)
+
+#         # DEFAULT VALUES
+#         if self.transform_input:
+#             x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.229 / 0.5) + (0.485 - 0.5) / 0.5
+#             x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.224 / 0.5) + (0.456 - 0.5) / 0.5
+#             x_ch2 = torch.unsqueeze(x[:, 2], 1) * (0.225 / 0.5) + (0.406 - 0.5) / 0.5
+#             x = torch.cat((x_ch0, x_ch1, x_ch2), 1)
+        # MY VALUES
+        
         if self.transform_input:
-            x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.229 / 0.5) + (0.485 - 0.5) / 0.5
-            x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.224 / 0.5) + (0.456 - 0.5) / 0.5
-            x_ch2 = torch.unsqueeze(x[:, 2], 1) * (0.225 / 0.5) + (0.406 - 0.5) / 0.5
+            x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.3769369 / 0.5) + (0.6353146 - 0.5) / 0.5
+            x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.36186826 / 0.5) + (0.6300146 - 0.5) / 0.5
+            x_ch2 = torch.unsqueeze(x[:, 2], 1) * (0.36188436 / 0.5) + (0.52398586 - 0.5) / 0.5
             x = torch.cat((x_ch0, x_ch1, x_ch2), 1)
+            
         # 299 x 299 x 3
         x = self.Conv2d_1a_3x3(x)                       # 111.5 x 111.5 x 32
         # 149 x 149 x 32
