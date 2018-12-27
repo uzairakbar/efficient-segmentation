@@ -32,8 +32,8 @@ class LeNetFCN8s(nn.Module):
         self.score_fr16 = nn.Conv2d(768, num_classes, 1)
         self.score_fr32 = nn.Conv2d(2048, num_classes, 1)
         self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8, bias=False)
-        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=2, padding=3, bias=False)
-        self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 16, stride=8, padding=4, bias=False)
+        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 3, stride=2, bias=False)
+        self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 32, stride=8, bias=False)
         
         # some drops here
         self.dropA = nn.Dropout2d(p=0.2)
@@ -127,9 +127,10 @@ class LeNetFCN8s(nn.Module):
         x = x + x16
         x = self.upscore16(x)                        # 10.65625 x 10.65625 x 288        ## 28 x 28 x numC
         print("deco2", x.shape)
-        x8 = x8[:, :, 1:1 + x.size()[2], 1:1 + x.size()[3]]
+        x8 = x8[:, :, 0:0 + x.size()[2], 0:0 + x.size()[3]]
         x = x + x8
         x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
+        x = x[:, :, 0:0 + input.size()[2], 0:0 + input()[3]]
         print("deco3", x.shape)
         return x
     
