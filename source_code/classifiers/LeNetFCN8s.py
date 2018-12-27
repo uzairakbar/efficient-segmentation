@@ -31,7 +31,7 @@ from .fcn32s import get_upsampling_weight
 #     return Inception3(**kwargs)
 
 
-class Inception3(nn.Module):
+class LeNetFCN32s(nn.Module):
 
     def __init__(self, num_classes=1000, aux_logits=True, transform_input=False):
         super(Inception3, self).__init__()
@@ -177,6 +177,54 @@ class Inception3(nn.Module):
         #    return x, aux
         return x
     
+    def copy_params_from_leNet(self, leNet):
+        selfFeatures = [
+            self.Conv2d_1a_3x3,
+            self.Conv2d_2a_3x3,
+            self.Conv2d_2b_3x3,
+            self.Conv2d_3b_1x1,
+            self.Conv2d_4a_3x3,
+            self.Mixed_5b,
+            self.Mixed_5c,
+            self.Mixed_5d,
+            self.Mixed_6a,
+            self.Mixed_6b,
+            self.Mixed_6c,
+            self.Mixed_6d,
+            self.Mixed_6e,
+            self.AuxLogits,
+            self.Mixed_7a,
+            self.Mixed_7b,
+            self.Mixed_7c
+        ]
+        
+        leNetFeatures = [
+            leNet.Conv2d_1a_3x3,
+            leNet.Conv2d_2a_3x3,
+            leNet.Conv2d_2b_3x3,
+            leNet.Conv2d_3b_1x1,
+            leNet.Conv2d_4a_3x3,
+            leNet.Mixed_5b,
+            leNet.Mixed_5c,
+            leNet.Mixed_5d,
+            leNet.Mixed_6a,
+            leNet.Mixed_6b,
+            leNet.Mixed_6c,
+            leNet.Mixed_6d,
+            leNet.Mixed_6e,
+            leNet.AuxLogits,
+            leNet.Mixed_7a,
+            leNet.Mixed_7b,
+            leNet.Mixed_7c
+        ]
+        
+        for l1, l2 in zip(leNetFeatures, selfFeatures):
+            if isinstance(l1, type(l2)):
+                assert l1.parameters().size() == l2.parameters().size()
+                l2.load_state_dict(l1.state_dict())           
+#                 l2.weight.data.copy_(l1.weight.data)
+#                 l2.bias.data.copy_(l1.bias.data)
+
     def save(self, path):
         """
         Save model with its parameters to the given path. Conventionally the
