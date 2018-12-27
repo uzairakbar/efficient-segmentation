@@ -31,10 +31,10 @@ from .fcn32s import get_upsampling_weight
 #     return Inception3(**kwargs)
 
 
-class LeNetFCN32s(nn.Module):
+class LeNetFCN8s(nn.Module):
 
     def __init__(self, num_classes=1000, aux_logits=True, transform_input=False):
-        super(Inception3, self).__init__()
+        super(LeNetFCN8s, self).__init__()
         self.aux_logits = aux_logits
         self.transform_input = transform_input
         self.Conv2d_1a_3x3 = i3.BasicConv2d(3, 32, kernel_size=3, stride=2)
