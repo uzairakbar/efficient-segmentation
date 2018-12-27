@@ -123,11 +123,11 @@ class LeNetFCN8s(nn.Module):
         x = x32
         x = self.upscore32(x)                         # 8.65625 x 8.65625 x 768         ## 14 x 14 x numC
         print("deco1", x.shape)
-        x16 = x16[:, :, 1:1 + x.size()[2], 1:1 + x.size()[3]]
+        # x16 = x16[:, :, 1:1 + x.size()[2], 1:1 + x.size()[3]]
         x = x + x16
         x = self.upscore16(x)                        # 10.65625 x 10.65625 x 288        ## 28 x 28 x numC
         print("deco2", x.shape)
-        x8 = x8[:, :, 1:1 + x.size()[2], 1:1 + x.size()[3]]
+        # x8 = x8[:, :, 1:1 + x.size()[2], 1:1 + x.size()[3]]
         x = x + x8
         x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
         print("deco3", x.shape)
