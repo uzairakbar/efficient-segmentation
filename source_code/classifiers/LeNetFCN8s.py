@@ -220,7 +220,7 @@ class LeNetFCN8s(nn.Module):
         
         for l1, l2 in zip(leNetFeatures, selfFeatures):
             if isinstance(l1, type(l2)):
-                assert l1.parameters().size() == l2.parameters().size()
+#                 assert l1.parameters().size() == l2.parameters().size()
                 l2.load_state_dict(l1.state_dict())           
 #                 l2.weight.data.copy_(l1.weight.data)
 #                 l2.bias.data.copy_(l1.bias.data)
