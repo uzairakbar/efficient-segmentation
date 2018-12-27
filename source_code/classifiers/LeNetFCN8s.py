@@ -192,7 +192,7 @@ class LeNetFCN8s(nn.Module):
             self.Mixed_6c,
             self.Mixed_6d,
             self.Mixed_6e,
-            self.AuxLogits,
+#             self.AuxLogits,
             self.Mixed_7a,
             self.Mixed_7b,
             self.Mixed_7c
@@ -212,7 +212,7 @@ class LeNetFCN8s(nn.Module):
             leNet.Mixed_6c,
             leNet.Mixed_6d,
             leNet.Mixed_6e,
-            leNet.AuxLogits,
+#             leNet.AuxLogits,
             leNet.Mixed_7a,
             leNet.Mixed_7b,
             leNet.Mixed_7c
