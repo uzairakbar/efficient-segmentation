@@ -31,8 +31,8 @@ class LeNetFCN8s(nn.Module):
         self.score_fr8 = nn.Conv2d(288, num_classes, 1)
         self.score_fr16 = nn.Conv2d(768, num_classes, 1)
         self.score_fr32 = nn.Conv2d(2048, num_classes, 1)
-        self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8, bias=False)
-        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 14, bias=False)
+        self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=2, bias=False)
+        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 14, stride=2, bias=False)
         self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 32, stride=9, bias=False)
         
         # some drops here
@@ -123,15 +123,15 @@ class LeNetFCN8s(nn.Module):
         x = x32
         x = self.upscore32(x)                         # 8.65625 x 8.65625 x 768         ## 14 x 14 x numC
         print("deco1", x.shape)
-        pad2_16 = int((x16.size()[2] - x.size()[2])/2)
-        pad3_16 = int((x16.size()[3] - x.size()[3])/2)
-        x16 = x16[:, :, pad2_16:pad2_16+x.size()[2], pad3_16:pad3_16+x.size()[3]]
+        pad2_16 = int((x.size()[2] - x16.size()[2])/2)
+        pad3_16 = int((x.size()[3] - x16.size()[3])/2)
+        x = x[:, :, pad2_16:pad2_16+x16.size()[2], pad3_16:pad3_16+x16.size()[3]]
         x = x + x16
         x = self.upscore16(x)                        # 10.65625 x 10.65625 x 288        ## 28 x 28 x numC
         print("deco2", x.shape)
-        pad2_8 = int((x8.size()[2] - x.size()[2])/2)
-        pad3_8 = int((x8.size()[3] - x.size()[3])/2)
-        x8 = x8[:, :, pad2_8:pad2_8+x.size()[2], pad3_8:pad3_8+x.size()[3]]
+        pad2_8 = int((x.size()[2] - x8.size()[2])/2)
+        pad3_8 = int((x.size()[3] - x8.size()[3])/2)
+        x = x[:, :, pad2_8:pad2_8+x8.size()[2], pad3_8:pad3_8+x8.size()[3]]
         x = x + x8
         x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
         print("deco3", x.shape)
