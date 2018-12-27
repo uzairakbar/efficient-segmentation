@@ -101,7 +101,7 @@ class SegmentationData(data.Dataset):
         
         cropseed = random.randint(0,2**32)
         # crop = transforms.RandomCrop(240, pad_if_needed=True) # THE RANDOM CROP
-        crop = transforms.CenterCrop(240) # my commenting shit ##############################################
+        crop = transforms.CenterCrop(300) # my commenting shit ##############################################
         
         
         # rand_jitter=transforms.ColorJitter()
