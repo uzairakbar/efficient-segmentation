@@ -130,8 +130,9 @@ class LeNetFCN8s(nn.Module):
         x8 = x8[:, :, 0:0 + x.size()[2], 0:0 + x.size()[3]]
         x = x + x8
         x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
-        x = x[:, :, 0:0 + input.size()[2], 0:0 + input.size()[3]]
         print("deco3", x.shape)
+        x = x[:, :, 0:0 + input.size()[2], 0:0 + input.size()[3]]
+        print("output", x.shape)
         return x
     
     def copy_params_from_leNet(self, leNet):
