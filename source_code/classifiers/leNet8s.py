@@ -9,7 +9,6 @@ class LeNetFCN8s(nn.Module):
 
     def __init__(self, num_classes=1000, transform_input=False):
         super(LeNetFCN8s, self).__init__()
-        self.aux_logits = aux_logits
         self.transform_input = transform_input
         self.Conv2d_1a_3x3 = i3.BasicConv2d(3, 32, kernel_size=3, stride=2)
         self.Conv2d_2a_3x3 = i3.BasicConv2d(32, 32, kernel_size=3)
