@@ -135,10 +135,10 @@ class SegmentationData(data.Dataset):
             target = F.rotate(target, angle=angle, expand=True)
         
         # CROP (random or normal)
-        ########## random.seed(cropseed)
-        ########## img = crop(img)
-        ########## random.seed(cropseed)
-        ########## target = crop(target)
+        random.seed(cropseed)
+        img = crop(img)
+        random.seed(cropseed)
+        target = crop(target)
         # img = center_crop(img) ################################################################################
         # img=rand_jitter(img)
         
