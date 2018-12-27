@@ -60,11 +60,14 @@ class LeNetFCN8s(nn.Module):
         self.score_fr8 = nn.Conv2d(288, num_classes, 4, padding=3)
         self.score_fr16 = nn.Conv2d(768, num_classes, 1, padding=1)
         self.score_fr32 = nn.Conv2d(2048, num_classes, 1, padding=1)
-        self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8)
-        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=2, padding=3)
-        self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 16, stride=8, padding=4)
+        self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8, bias=False)
+        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=2, padding=3, bias=False)
+        self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 16, stride=8, padding=4, bias=False)
         # self.fourthDeconv = nn.ConvTranspose2d(num_classes, num_classes, 32, stride=8)
         
+        # some drops here
+        self.dropA = nn.Dropout2d(p=0.2)
+        self.dropB = nn.Dropout2d(p=0.2)
         
         # MINE MINE MINE
 #         self.score_fr = nn.Conv2d(2048, num_classes, 1)
@@ -75,14 +78,13 @@ class LeNetFCN8s(nn.Module):
         # self.fc = nn.Linear(2048, num_classes)
 
         for m in self.modules():
-            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                import scipy.stats as stats
-                stddev = m.stddev if hasattr(m, 'stddev') else 0.1
-                X = stats.truncnorm(-2, 2, scale=stddev)
-                values = torch.Tensor(X.rvs(m.weight.numel()))
-                values = values.view(m.weight.size())
-                m.weight.data.copy_(values)
+            if isinstance(m, nn.Conv2d):# or 
+                torch.nn.init.xavier_normal_(m.weight, gain=2)
+            elif isinstance(m, nn.Linear):
+                print("ABORT! ABORT! NOT FULLY CONVOLUTIONAL!!!")
+                quit()
             elif isinstance(m, nn.BatchNorm2d):
+                print("Weird. I have got a batchnorm in here")
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.ConvTranspose2d):
@@ -131,6 +133,7 @@ class LeNetFCN8s(nn.Module):
         x = self.Mixed_6d(x)                            # 12.3125 x 12.3125 x 768
         # 17 x 17 x 768
         x = self.Mixed_6e(x)                            # 12.3125 x 12.3125 x 768
+        x = self.dropA(x)               # DROPOUT!
         x16 = x
         # 17 x 17 x 768
 #         print("16s", x.shape)
@@ -142,6 +145,8 @@ class LeNetFCN8s(nn.Module):
         x = self.Mixed_7b(x)                            # 5.65625 x 5.65625 x 2048
         # 8 x 8 x 2048
         x = self.Mixed_7c(x)                            # 5.65625 x 5.65625 x 2048
+        
+        x = self.dropB(x)               # DROPOUT!
         # 8 x 8 x 2048
 #         print("32s", x.shape)
         ### x = F.avg_pool2d(x, kernel_size=8)
@@ -224,6 +229,9 @@ class LeNetFCN8s(nn.Module):
                 l2.load_state_dict(l1.state_dict())           
 #                 l2.weight.data.copy_(l1.weight.data)
 #                 l2.bias.data.copy_(l1.bias.data)
+        for l1, l2 in zip([leNet.fc], [self.score_fr32]):
+            l2.weight.data.copy_(l1.weight.data.view(l2.weight.size()))
+            l2.bias.data.copy_(l1.bias.data.view(l2.bias.size()))
 
     def save(self, path):
         """
