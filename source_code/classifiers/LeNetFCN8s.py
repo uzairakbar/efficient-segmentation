@@ -57,7 +57,7 @@ class LeNetFCN8s(nn.Module):
 
     def forward(self, input):
         x = input           # 224 x 224 x 3
-        print("input size", x.shape)
+#         print("input size", x.shape)
 
         # MY VALUES
         
@@ -87,7 +87,7 @@ class LeNetFCN8s(nn.Module):
         x = self.Mixed_5c(x)                            # 25.625 x 25.625 x 288
         x8 = x
         # 35 x 35 x 288
-        print("8s", x.shape)
+#         print("8s", x.shape)
         x = self.Mixed_5d(x)                            # 25.625 x 25.625 x 288
         # 35 x 35 x 288
         x = self.Mixed_6a(x)                            # 12.3125 x 12.3125 x 768
@@ -102,7 +102,7 @@ class LeNetFCN8s(nn.Module):
         x = self.dropA(x)               # DROPOUT!
         x16 = x
         # 17 x 17 x 768
-        print("16s", x.shape)
+#         print("16s", x.shape)
         # 17 x 17 x 768
         x = self.Mixed_7a(x)                            # 5.65625 x 5.65625 x 1280
         # 8 x 8 x 1280
@@ -113,7 +113,7 @@ class LeNetFCN8s(nn.Module):
         x = self.dropB(x)               # DROPOUT!
         x32 = x
         # 8 x 8 x 2048
-        print("32s", x.shape)
+#         print("32s", x.shape)
         ### MY OWN SHIT
         
         x8 = self.score_fr8(x8)
@@ -122,23 +122,23 @@ class LeNetFCN8s(nn.Module):
         # NOT MINE NOT MINE
         x = x32
         x = self.upscore32(x)                         # 8.65625 x 8.65625 x 768         ## 14 x 14 x numC
-        print("deco1", x.shape)
+#         print("deco1", x.shape)
         pad2_16 = int((x.size()[2] - x16.size()[2])/2)
         pad3_16 = int((x.size()[3] - x16.size()[3])/2)
         x = x[:, :, pad2_16:pad2_16+x16.size()[2], pad3_16:pad3_16+x16.size()[3]]
         x = x + x16
         x = self.upscore16(x)                        # 10.65625 x 10.65625 x 288        ## 28 x 28 x numC
-        print("deco2", x.shape)
+#         print("deco2", x.shape)
         pad2_8 = int((x.size()[2] - x8.size()[2])/2)
         pad3_8 = int((x.size()[3] - x8.size()[3])/2)
         x = x[:, :, pad2_8:pad2_8+x8.size()[2], pad3_8:pad3_8+x8.size()[3]]
         x = x + x8
         x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
-        print("deco3", x.shape)
+#         print("deco3", x.shape)
         pad2_out = int((x.size()[2] - input.size()[2])/2)
         pad3_out = int((x.size()[3] - input.size()[3])/2)
         x = x[:, :, pad2_out:pad2_out+input.size()[2], pad3_out:pad3_out+input.size()[3]].contiguous()
-        print("output", x.shape)
+#         print("output", x.shape)
         return x
     
     def copy_params_from_leNet(self, leNet):
