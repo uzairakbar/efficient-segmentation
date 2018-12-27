@@ -58,12 +58,12 @@ class FCN8s(nn.Module):
         # fc6
         self.fc6 = nn.Conv2d(512, 4096, 7)
         self.relu6 = nn.ReLU(inplace=True)
-        self.drop6 = nn.Dropout2d()
+        self.drop6 = nn.Dropout2d(p=0.2)
 
         # fc7
         self.fc7 = nn.Conv2d(4096, 4096, 1)
         self.relu7 = nn.ReLU(inplace=True)
-        self.drop7 = nn.Dropout2d()
+        self.drop7 = nn.Dropout2d(p=0.2)
 
         self.score_fr = nn.Conv2d(4096, n_class, 1)
         self.score_pool3 = nn.Conv2d(256, n_class, 1)
