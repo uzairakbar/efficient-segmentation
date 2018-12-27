@@ -29,9 +29,9 @@ class LeNetFCN8s(nn.Module):
         self.Mixed_7c = i3.InceptionE(2048)
         
         # OTHER GUYS
-        self.score_fr8 = nn.Conv2d(288, num_classes, 4, padding=3)
-        self.score_fr16 = nn.Conv2d(768, num_classes, 1, padding=1)
-        self.score_fr32 = nn.Conv2d(2048, num_classes, 1, padding=1)
+        self.score_fr8 = nn.Conv2d(288, num_classes, 1)
+        self.score_fr16 = nn.Conv2d(768, num_classes, 1)
+        self.score_fr32 = nn.Conv2d(2048, num_classes, 1)
         self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8, bias=False)
         self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=2, padding=3, bias=False)
         self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 16, stride=8, padding=4, bias=False)
@@ -58,7 +58,7 @@ class LeNetFCN8s(nn.Module):
 
     def forward(self, input):
         x = input           # 224 x 224 x 3
-#         print("input size", x.shape)
+        print("input size", x.shape)
 
         # MY VALUES
         
@@ -88,7 +88,7 @@ class LeNetFCN8s(nn.Module):
         x = self.Mixed_5c(x)                            # 25.625 x 25.625 x 288
         x8 = x
         # 35 x 35 x 288
-#         print("8s", x.shape)
+        print("8s", x.shape)
         x = self.Mixed_5d(x)                            # 25.625 x 25.625 x 288
         # 35 x 35 x 288
         x = self.Mixed_6a(x)                            # 12.3125 x 12.3125 x 768
@@ -103,7 +103,7 @@ class LeNetFCN8s(nn.Module):
         x = self.dropA(x)               # DROPOUT!
         x16 = x
         # 17 x 17 x 768
-#         print("16s", x.shape)
+        print("16s", x.shape)
         # 17 x 17 x 768
         x = self.Mixed_7a(x)                            # 5.65625 x 5.65625 x 1280
         # 8 x 8 x 1280
@@ -112,23 +112,26 @@ class LeNetFCN8s(nn.Module):
         x = self.Mixed_7c(x)                            # 5.65625 x 5.65625 x 2048
         
         x = self.dropB(x)               # DROPOUT!
+        x32 = x
         # 8 x 8 x 2048
-#         print("32s", x.shape)
+        print("32s", x.shape)
         ### MY OWN SHIT
         
         x8 = self.score_fr8(x8)
         x16 = self.score_fr16(x16)
-        x32 = self.score_fr32(x)
+        x32 = self.score_fr32(x32)
         # NOT MINE NOT MINE
         x = x32
         x = self.upscore32(x)                         # 8.65625 x 8.65625 x 768         ## 14 x 14 x numC
-#         print("deco1", x.shape)
+        print("deco1", x.shape)
+        x16 = x16[:, :, 1:1 + x.size()[2], 1:1 + x.size()[3]]
         x = x + x16
         x = self.upscore16(x)                        # 10.65625 x 10.65625 x 288        ## 28 x 28 x numC
-#         print("deco2", x.shape)
+        print("deco2", x.shape)
+        x8 = x8[:, :, 1:1 + x.size()[2], 1:1 + x.size()[3]]
         x = x + x8
         x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
-#         print("deco3", x.shape)
+        print("deco3", x.shape)
         return x
     
     def copy_params_from_leNet(self, leNet):
