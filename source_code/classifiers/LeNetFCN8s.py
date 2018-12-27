@@ -229,9 +229,11 @@ class LeNetFCN8s(nn.Module):
                 l2.load_state_dict(l1.state_dict())           
 #                 l2.weight.data.copy_(l1.weight.data)
 #                 l2.bias.data.copy_(l1.bias.data)
-        for l1, l2 in zip([leNet.fc], [self.score_fr32]):
-            l2.weight.data.copy_(l1.weight.data.view(l2.weight.size()))
-            l2.bias.data.copy_(l1.bias.data.view(l2.bias.size()))
+
+#         # Dont use this, the last decision layer should be learned by oneself
+#         for l1, l2 in zip([leNet.fc], [self.score_fr32]):
+#             l2.weight.data.copy_(l1.weight.data.view(l2.weight.size()))
+#             l2.bias.data.copy_(l1.bias.data.view(l2.bias.size()))
 
     def save(self, path):
         """
