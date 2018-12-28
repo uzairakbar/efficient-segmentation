@@ -62,8 +62,10 @@ def label_img_to_rgb(label_img):
 
 class SegmentationData(data.Dataset):
 
-    def __init__(self, image_paths_file):
+    def __init__(self, image_paths_file, train=True, rotation='constrained'):
         self.root_dir_name = os.path.dirname(image_paths_file)
+        self.train = train
+        self.rotation = rotation
 
         with open(image_paths_file) as f:
             self.image_names = f.read().splitlines()
@@ -123,16 +125,18 @@ class SegmentationData(data.Dataset):
                                          img_id + '_GT.bmp'))
         
         # Random ROTATION
-        # random.seed(rotseed)
-        # img = rot(img)
-        # random.seed(rotseed)
-        # target = rot(target)
+        if self.train and (self.rotation=='random'):
+            random.seed(rotseed)
+            img = rot(img)
+            random.seed(rotseed)
+            target = rot(target)
         
         # Constrained rotation
-        if random.random() > 0.5:
-            angle = 90
-            img = F.rotate(img, angle=angle, expand=True)
-            target = F.rotate(target, angle=angle, expand=True)
+        if self.train and (self.rotation=='constrained'):
+            if random.random() > 0.5:
+                angle = 90
+                img = F.rotate(img, angle=angle, expand=True)
+                target = F.rotate(target, angle=angle, expand=True)
         
         # CROP (random or normal)
         random.seed(cropseed)
@@ -143,16 +147,18 @@ class SegmentationData(data.Dataset):
         # img=rand_jitter(img)
         
         # HORIZONTAL FLIP
-        random.seed(hflipseed)
-        img=hflip(img)
-        random.seed(hflipseed)
-        target=hflip(target)
+        if self.train:
+            random.seed(hflipseed)
+            img=hflip(img)
+            random.seed(hflipseed)
+            target=hflip(target)
         
         # VERTICAL FLIP
-        random.seed(vflipseed)
-        img=vflip(img)
-        random.seed(vflipseed)
-        target=vflip(target)
+        if self.train:
+            random.seed(vflipseed)
+            img=vflip(img)
+            random.seed(vflipseed)
+            target=vflip(target)
         
         img = to_tensor(img)
         img = normalize(img)
@@ -163,10 +169,6 @@ class SegmentationData(data.Dataset):
         #print('normalized')
         #plt.imshow(img.numpy())
 
-        
-
-
-        
         # target = center_crop(target) #######################################################################
         # target = to_tensor(target) ###
         target = np.array(target, dtype=np.int64) ###############
