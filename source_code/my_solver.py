@@ -463,7 +463,7 @@ class cSolver(object):
                 
                 loss1 = 0
                 for s in range(inputs.size()[0]):
-                    loss1 += self.loss_func(outputs[s].view(23, -1).transpose(1, 0), targets[s].view(-1))
+                    loss1 += self.loss_func(outputs[s].view(24, -1).transpose(1, 0), targets[s].view(-1))
                 loss1 /= inputs.size()[0]
                 loss2 = self.dice_loss(outputs, OHtargets)
                 
