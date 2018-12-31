@@ -172,12 +172,13 @@ class dSolver(object):
                          "weight_decay": 0.0}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
-                 loss_func=torch.nn.CrossEntropyLoss()):
+                 loss_func=torch.nn.CrossEntropyLoss(), ignore_background=False):
         optim_args_merged = self.default_adam_args.copy()
         optim_args_merged.update(optim_args)
         self.optim_args = optim_args_merged
         self.optim = optim
         self.loss_func = loss_func
+        self.ignore_background=ignore_background
 
         self._reset_histories()
         
@@ -187,7 +188,8 @@ class dSolver(object):
         targets_extend += 1
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         one_hot.scatter_(1, targets_extend, 1)
-        one_hot = one_hot[:, 1:]
+        if self.ignore_background:
+            one_hot = one_hot[:, 1:]
         return one_hot
 
     def _reset_histories(self):
@@ -324,13 +326,14 @@ class cSolver(object):
                         "momentum":0.99}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
-                 loss_func=torch.nn.CrossEntropyLoss()):
+                 loss_func=torch.nn.CrossEntropyLoss(), ignore_background=False):
         optim_args_merged = self.default_adam_args.copy()
         optim_args_merged.update(optim_args)
         self.optim_args = optim_args_merged
         self.optim = optim
         self.loss_func = loss_func
         self.dice_loss = Dice_Loss()
+        self.ignore_background = ignore_background
 
         self._reset_histories()
         
@@ -340,7 +343,8 @@ class cSolver(object):
         targets_extend += 1
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         one_hot.scatter_(1, targets_extend, 1)
-        one_hot = one_hot[:, 1:]
+        if self.ignore_background:
+            one_hot = one_hot[:, 1:]
         return one_hot
 
     def _reset_histories(self):
