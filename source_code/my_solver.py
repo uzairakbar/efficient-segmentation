@@ -28,12 +28,13 @@ class Solver(object):
                          "weight_decay": 0.0}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
-                 loss_func=torch.nn.CrossEntropyLoss()):
+                 loss_func=torch.nn.CrossEntropyLoss(), C=24):
         optim_args_merged = self.default_adam_args.copy()
         optim_args_merged.update(optim_args)
         self.optim_args = optim_args_merged
         self.optim = optim
         self.loss_func = loss_func
+        self.C = C
 
         self._reset_histories()
 
@@ -99,7 +100,7 @@ class Solver(object):
                 
                 loss = 0
                 for s in range(inputs.size()[0]):
-                    loss += self.loss_func(outputs[s].view(23, -1).transpose(1, 0), targets[s].view(-1))
+                    loss += self.loss_func(outputs[s].view(self.C, -1).transpose(1, 0), targets[s].view(-1))
                 loss /= inputs.size()[0]
                 
                 # loss = self.loss_func(outputs, targets)
@@ -172,13 +173,14 @@ class dSolver(object):
                          "weight_decay": 0.0}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
-                 loss_func=torch.nn.CrossEntropyLoss(), ignore_background=False):
+                 loss_func=torch.nn.CrossEntropyLoss(), ignore_background=False, C=24):
         optim_args_merged = self.default_adam_args.copy()
         optim_args_merged.update(optim_args)
         self.optim_args = optim_args_merged
         self.optim = optim
         self.loss_func = loss_func
         self.ignore_background=ignore_background
+        self.C = C
 
         self._reset_histories()
         
@@ -326,7 +328,7 @@ class cSolver(object):
                         "momentum":0.99}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
-                 loss_func=torch.nn.CrossEntropyLoss(), ignore_background=False):
+                 loss_func=torch.nn.CrossEntropyLoss(), ignore_background=False, C=24):
         optim_args_merged = self.default_adam_args.copy()
         optim_args_merged.update(optim_args)
         self.optim_args = optim_args_merged
@@ -334,6 +336,7 @@ class cSolver(object):
         self.loss_func = loss_func
         self.dice_loss = Dice_Loss()
         self.ignore_background = ignore_background
+        self.C = C
 
         self._reset_histories()
         
@@ -414,7 +417,7 @@ class cSolver(object):
                 
                 loss1 = 0
                 for s in range(inputs.size()[0]):
-                    loss1 += self.loss_func(outputs[s].view(23, -1).transpose(1, 0), targets[s].view(-1))
+                    loss1 += self.loss_func(outputs[s].view(self.C, -1).transpose(1, 0), targets[s].view(-1))
                 loss1 /= inputs.size()[0]
                 loss2 = self.dice_loss(outputs, OHtargets)
                 
