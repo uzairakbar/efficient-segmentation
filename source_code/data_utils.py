@@ -180,7 +180,7 @@ class SegmentationData(data.Dataset):
         # target = to_tensor(target) ###
         target = np.array(target, dtype=np.int64) ###############
         
-        print("original shape", target.shape())
+        print("original shape", target.numpy().shape)
         if target.shape[1] <= 10:
             print("original", target)
         print("original buildings", np.sum(np.all(target == np.array([[[128]], [[0]], [[0]]]), axis=0)))
@@ -196,7 +196,7 @@ class SegmentationData(data.Dataset):
 
         # print(target_labels.shape())
         
-        print("labeled", target_labels.shape())
+        print("labeled", target_labels.shape)
         if target.shape[1] <= 10:
             print("labeled", target_labels)
         print("labeled buildings", np.sum(target_labels == 0))
