@@ -88,7 +88,7 @@ def label_img_to_rgb(label_img):
 
 class SegmentationData(data.Dataset):
 
-    def __init__(self, image_paths_file, train=True, rotation='constrained', crop_size=240, crop_style='center',
+    def __init__(self, image_paths_file, train=True, rotation='constrained', crop_size=240, crop_style='center', debug=False
                  mu=[0.6353146 , 0.6300146 , 0.52398586], std=[0.3769369 , 0.36186826, 0.36188436]):
         self.root_dir_name = os.path.dirname(image_paths_file)
         self.train = train
@@ -97,6 +97,7 @@ class SegmentationData(data.Dataset):
         self.std = std
         self.crop_size = crop_size
         self.crop_style = crop_style
+        self.debug = debug
 
         with open(image_paths_file) as f:
             self.image_names = f.read().splitlines()
@@ -206,11 +207,12 @@ class SegmentationData(data.Dataset):
         # target = to_tensor(target) ###
         target = np.array(target, dtype=np.int64) ###############
         
-        print("original shape", target.shape)
-        if target.shape[1] <= 10:
-            print("original", target)
-        print("original buildings", np.sum(np.all(target == [128, 0, 0], axis=0)))
-        print("original sign", np.sum(np.all(target == [192, 128, 128], axis=0)))
+        if self.debug:
+            print("original shape", target.shape)
+            if target.shape[1] <= 10:
+                print("original", target)
+            print("original buildings", np.sum(np.all(target == [128, 0, 0], axis=0)))
+            print("original sign", np.sum(np.all(target == [192, 128, 128], axis=0)))
         
         tl = target
         target_labels = target[..., 0]
@@ -222,11 +224,12 @@ class SegmentationData(data.Dataset):
 
         # print(target_labels.shape())
         
-        print("labeled", target_labels.shape)
-        if target.shape[1] <= 10:
-            print("labeled", target_labels)
-        print("labeled buildings", np.sum(target_labels == 0))
-        print("labeled sign", np.sum(target_labels == 14))
+        if self.debug:
+            print("labeled", target_labels.shape)
+            if target.shape[1] <= 10:
+                print("labeled", target_labels)
+            print("labeled buildings", np.sum(target_labels == 0))
+            print("labeled sign", np.sum(target_labels == 14))
 
         target_labels = torch.from_numpy(target_labels.copy())
         # print(target_labels.shape)
