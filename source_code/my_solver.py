@@ -120,7 +120,7 @@ class Solver(object):
             _, preds = torch.max(outputs, 1)
 
             # Only allow images/pixels with label >= 0 e.g. for segmentation
-            targets_mask = (targets >= 0)*(targets <=22)
+            targets_mask = targets > 0
             train_acc = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
             self.train_acc_history.append(train_acc)
             if log_nth:
@@ -148,7 +148,7 @@ class Solver(object):
                 _, preds = torch.max(outputs, 1)
 
                 # Only allow images/pixels with target >= 0 e.g. for segmentation
-                targets_mask = (targets >= 0)*(targets <=22)
+                targets_mask = targets > 0
                 scores = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
                 val_scores.append(scores)
 
@@ -198,7 +198,7 @@ class dSolver(object):
 #         if self.ignore_background:
 #             one_hot = one_hot[:, 1:]
         if self.ignore_background:
-            one_hot = one_hot[:, :-1]
+            one_hot = one_hot[:, 1:]
         return one_hot
 
     def _reset_histories(self):
@@ -283,7 +283,7 @@ class dSolver(object):
             _, preds = torch.max(outputs, 1)
 
             # Only allow images/pixels with label >= 0 e.g. for segmentation
-            targets_mask = (targets >= 0)*(targets <=22)
+            targets_mask = targets > 0
             train_acc = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
             self.train_acc_history.append(train_acc)
             if log_nth:
@@ -310,7 +310,7 @@ class dSolver(object):
                 _, preds = torch.max(outputs, 1)
 
                 # Only allow images/pixels with target >= 0 e.g. for segmentation
-                targets_mask = (targets >= 0)*(targets <=22)
+                targets_mask = targets > 0
                 scores = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
                 val_scores.append(scores)
 
@@ -357,7 +357,7 @@ class cSolver(object):
 #         if self.ignore_background:
 #             one_hot = one_hot[:, 1:]
         if self.ignore_background:
-            one_hot = one_hot[:, :-1]
+            one_hot = one_hot[:, 1:]
         return one_hot
 
     def _reset_histories(self):
@@ -449,7 +449,7 @@ class cSolver(object):
             _, preds = torch.max(outputs, 1)
 
             # Only allow images/pixels with label >= 0 e.g. for segmentation
-            targets_mask = (targets >= 0)*(targets <=22)
+            targets_mask = targets > 0
             train_acc = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
             self.train_acc_history.append(train_acc)
             if log_nth:
@@ -484,7 +484,7 @@ class cSolver(object):
                 _, preds = torch.max(outputs, 1)
 
                 # Only allow images/pixels with target >= 0 e.g. for segmentation
-                targets_mask = (targets >= 0)*(targets <=22)
+                targets_mask = targets >= 0
                 scores = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
                 val_scores.append(scores)
 
