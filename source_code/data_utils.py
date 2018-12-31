@@ -62,13 +62,15 @@ def label_img_to_rgb(label_img):
 
 class SegmentationData(data.Dataset):
 
-    def __init__(self, image_paths_file, train=True, rotation='constrained',
+    def __init__(self, image_paths_file, train=True, rotation='constrained', crop_size=240, crop_style='center',
                  mu=[0.6353146 , 0.6300146 , 0.52398586], std=[0.3769369 , 0.36186826, 0.36188436]):
         self.root_dir_name = os.path.dirname(image_paths_file)
         self.train = train
         self.rotation = rotation
         self.mu = mu
         self.std = std
+        self.crop_size = crop_size
+        self.crop_style = crop_style
 
         with open(image_paths_file) as f:
             self.image_names = f.read().splitlines()
@@ -104,11 +106,12 @@ class SegmentationData(data.Dataset):
         rotseed = random.randint(0,2**32)
         rot=transforms.RandomRotation(90, expand=True)
         
-        cropseed = random.randint(0,2**32)
-        # crop = transforms.RandomCrop(240, pad_if_needed=True) # THE RANDOM CROP
-        crop = transforms.CenterCrop(240) # my commenting shit ##############################################
-        
-        
+        if self.crop_style == 'center':
+            cropseed = random.randint(0,2**32)
+            crop = transforms.CenterCrop(self.crop_size) # my commenting shit ##############################################
+        elif self.crop_style == 'random':
+            cropseed = random.randint(0,2**32)
+            crop = transforms.RandomCrop(self.crop_size, pad_if_needed=True) # THE RANDOM CROP
         # rand_jitter=transforms.ColorJitter()
         # rand_hflip=transforms.RandomHorizontalFlip()
         # rand_vflip=transforms.RandomVerticalFlip()
@@ -142,10 +145,11 @@ class SegmentationData(data.Dataset):
                 target = F.rotate(target, angle=angle, expand=True)
         
         # CROP (random or normal)
-        random.seed(cropseed)
-        img = crop(img)
-        random.seed(cropseed)
-        target = crop(target)
+        if not self.crop_style == None:
+            random.seed(cropseed)
+            img = crop(img)
+            random.seed(cropseed)
+            target = crop(target)
         # img = center_crop(img) ################################################################################
         # img=rand_jitter(img)
         
@@ -175,7 +179,13 @@ class SegmentationData(data.Dataset):
         # target = center_crop(target) #######################################################################
         # target = to_tensor(target) ###
         target = np.array(target, dtype=np.int64) ###############
-
+        
+        print("original shape", target.shape())
+        if target.shape[1] <= 10:
+            print("original", target)
+        print("original buildings", np.sum(np.all(target == np.array([[[128]], [[0]], [[0]]]), axis=0)))
+        print("original sign", np.sum(np.all(target == np.array([[[192]], [[128]], [[128]]]), axis=0)))
+        
         tl = target
         target_labels = target[..., 0]
         for label in SEG_LABELS_LIST:
@@ -185,6 +195,12 @@ class SegmentationData(data.Dataset):
         # # target_labels = np.transpose(target_labels)
 
         # print(target_labels.shape())
+        
+        print("labeled", target_labels.shape())
+        if target.shape[1] <= 10:
+            print("labeled", target_labels)
+        print("labeled buildings", np.sum(target_labels == 0))
+        print("labeled sign", np.sum(target_labels == 14))
 
         target_labels = torch.from_numpy(target_labels.copy())
         # print(target_labels.shape)
