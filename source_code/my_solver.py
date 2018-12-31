@@ -191,12 +191,14 @@ class dSolver(object):
     def one_hot(self, targets, C=24):
         targets_extend = targets.clone()
         targets_extend.unsqueeze_(1)
-        if self.ignore_background:
-            targets_extend += 1
+#         if self.ignore_background:
+#             targets_extend += 1
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         one_hot.scatter_(1, targets_extend, 1)
+#         if self.ignore_background:
+#             one_hot = one_hot[:, 1:]
         if self.ignore_background:
-            one_hot = one_hot[:, 1:]
+            one_hot = one_hot[:, :-1]
         return one_hot
 
     def _reset_histories(self):
@@ -348,12 +350,14 @@ class cSolver(object):
     def one_hot(self, targets, C=24):
         targets_extend = targets.clone()
         targets_extend.unsqueeze_(1)
-        if self.ignore_background:
-            targets_extend += 1
+#         if self.ignore_background:
+#             targets_extend += 1
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         one_hot.scatter_(1, targets_extend, 1)
+#         if self.ignore_background:
+#             one_hot = one_hot[:, 1:]
         if self.ignore_background:
-            one_hot = one_hot[:, 1:]
+            one_hot = one_hot[:, :-1]
         return one_hot
 
     def _reset_histories(self):
