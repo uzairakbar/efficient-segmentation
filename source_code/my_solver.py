@@ -138,7 +138,11 @@ class Solver(object):
                     inputs, targets = inputs.cuda(), targets.cuda()
 
                 outputs = model.forward(inputs)
-                loss = self.loss_func(outputs, targets)
+                loss = 0
+                for s in range(inputs.size()[0]):
+                    loss += self.loss_func(outputs[s].view(self.C, -1).transpose(1, 0), targets[s].view(-1))
+                loss /= inputs.size()[0]
+                #loss = self.loss_func(outputs, targets)
                 val_losses.append(loss.data.cpu().numpy())
 
                 _, preds = torch.max(outputs, 1)
@@ -187,7 +191,8 @@ class dSolver(object):
     def one_hot(self, targets, C=24):
         targets_extend = targets.clone()
         targets_extend.unsqueeze_(1)
-        targets_extend += 1
+        if self.ignore_background:
+            targets_extend += 1
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         one_hot.scatter_(1, targets_extend, 1)
         if self.ignore_background:
@@ -343,7 +348,8 @@ class cSolver(object):
     def one_hot(self, targets, C=24):
         targets_extend = targets.clone()
         targets_extend.unsqueeze_(1)
-        targets_extend += 1
+        if self.ignore_background:
+            targets_extend += 1
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         one_hot.scatter_(1, targets_extend, 1)
         if self.ignore_background:
@@ -463,7 +469,7 @@ class cSolver(object):
                 
                 loss1 = 0
                 for s in range(inputs.size()[0]):
-                    loss1 += self.loss_func(outputs[s].view(24, -1).transpose(1, 0), targets[s].view(-1))
+                    loss1 += self.loss_func(outputs[s].view(self.C, -1).transpose(1, 0), targets[s].view(-1))
                 loss1 /= inputs.size()[0]
                 loss2 = self.dice_loss(outputs, OHtargets)
                 
