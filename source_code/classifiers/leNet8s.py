@@ -7,8 +7,11 @@ from .fcn32s import get_upsampling_weight
 
 class LeNetFCN8s(nn.Module):
 
-    def __init__(self, num_classes=1000, transform_input=False):
+    def __init__(self, num_classes=1000, transform_input=False,
+                mu=[0.6353146 , 0.6300146 , 0.52398586], std=[0.3769369 , 0.36186826, 0.36188436]):
         super(LeNetFCN8s, self).__init__()
+        slef.mu = mu
+        self.std = std
         self.transform_input = transform_input
         self.Conv2d_1a_3x3 = i3.BasicConv2d(3, 32, kernel_size=3, stride=2)
         self.Conv2d_2a_3x3 = i3.BasicConv2d(32, 32, kernel_size=3)
@@ -62,9 +65,9 @@ class LeNetFCN8s(nn.Module):
         # MY VALUES
         
         if self.transform_input:
-            x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.3769369 / 0.5) + (0.6353146 - 0.5) / 0.5
-            x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.36186826 / 0.5) + (0.6300146 - 0.5) / 0.5
-            x_ch2 = torch.unsqueeze(x[:, 2], 1) * (0.36188436 / 0.5) + (0.52398586 - 0.5) / 0.5
+            x_ch0 = torch.unsqueeze(x[:, 0], 1) * (self.std[0] / 0.5) + (self.mu[0] - 0.5) / 0.5
+            x_ch1 = torch.unsqueeze(x[:, 1], 1) * (self.std[0] / 0.5) + (self.mu[1] - 0.5) / 0.5
+            x_ch2 = torch.unsqueeze(x[:, 2], 1) * (self.std[0] / 0.5) + (self.mu[2] - 0.5) / 0.5
             x = torch.cat((x_ch0, x_ch1, x_ch2), 1)
             
         # 299 x 299 x 3
