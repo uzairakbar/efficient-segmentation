@@ -19,7 +19,6 @@ import matplotlib.image as mpimg
 
 # pylint: disable=C0326
 SEG_LABELS_LIST = [
-    {"id": 23, "name": "void",       "rgb_values": [0,   0,    0]},
     {"id": 0,  "name": "building",   "rgb_values": [128, 0,    0]},
     {"id": 1,  "name": "grass",      "rgb_values": [0,   128,  0]},
     {"id": 2,  "name": "tree",       "rgb_values": [128, 128,  0]},
@@ -42,7 +41,8 @@ SEG_LABELS_LIST = [
     {"id": 19, "name": "cat",        "rgb_values": [0,   192,  128]},
     {"id": 20, "name": "dog",        "rgb_values": [128, 192,  128]},
     {"id": 21, "name": "body",       "rgb_values": [64,  64,   0]},
-    {"id": 22, "name": "boat",       "rgb_values": [192, 64,   0]}]
+    {"id": 22, "name": "boat",       "rgb_values": [192, 64,   0]},
+    {"id": 23, "name": "void",       "rgb_values": [0,   0,    0]}]
 
 
 def label_img_to_rgb(label_img):
