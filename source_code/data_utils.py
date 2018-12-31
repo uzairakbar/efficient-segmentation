@@ -62,10 +62,13 @@ def label_img_to_rgb(label_img):
 
 class SegmentationData(data.Dataset):
 
-    def __init__(self, image_paths_file, train=True, rotation='constrained'):
+    def __init__(self, image_paths_file, train=True, rotation='constrained',
+                 mu=[0.6353146 , 0.6300146 , 0.52398586], std=[0.3769369 , 0.36186826, 0.36188436]):
         self.root_dir_name = os.path.dirname(image_paths_file)
         self.train = train
         self.rotation = rotation
+        self.mu = mu
+        self.std = std
 
         with open(image_paths_file) as f:
             self.image_names = f.read().splitlines()
@@ -89,8 +92,8 @@ class SegmentationData(data.Dataset):
         return len(self.image_names)
 
     def get_item_from_index(self, index):
-        normalize = transforms.Normalize(mean=[0.6353146 , 0.6300146 , 0.52398586],
-                                 std=[0.3769369 , 0.36186826, 0.36188436]) # my shit
+        normalize = transforms.Normalize(mean=self.mu,
+                                 std=self.std) # my shit
 
         to_tensor = transforms.ToTensor()
         vflipseed = random.randint(0,2**32)
