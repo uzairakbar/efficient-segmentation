@@ -10,7 +10,7 @@ class LeNetFCN8s(nn.Module):
     def __init__(self, num_classes=1000, transform_input=False,
                 mu=[0.6353146 , 0.6300146 , 0.52398586], std=[0.3769369 , 0.36186826, 0.36188436]):
         super(LeNetFCN8s, self).__init__()
-        slef.mu = mu
+        self.mu = mu
         self.std = std
         self.transform_input = transform_input
         self.Conv2d_1a_3x3 = i3.BasicConv2d(3, 32, kernel_size=3, stride=2)
