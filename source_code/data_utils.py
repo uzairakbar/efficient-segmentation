@@ -19,7 +19,7 @@ import matplotlib.image as mpimg
 
 # pylint: disable=C0326
 SEG_LABELS_LIST = [
-    {"id": -1, "name": "void",       "rgb_values": [0,   0,    0]},
+    {"id": 23, "name": "void",       "rgb_values": [0,   0,    0]},
     {"id": 0,  "name": "building",   "rgb_values": [128, 0,    0]},
     {"id": 1,  "name": "grass",      "rgb_values": [0,   128,  0]},
     {"id": 2,  "name": "tree",       "rgb_values": [128, 128,  0]},
