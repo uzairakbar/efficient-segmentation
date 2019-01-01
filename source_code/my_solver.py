@@ -358,6 +358,7 @@ class cSolver(object):
 #             one_hot = one_hot[:, 1:]
         if self.ignore_background:
             one_hot = one_hot[:, 1:]
+        print(one_hot.shape)
         return one_hot
 
     def _reset_histories(self):
