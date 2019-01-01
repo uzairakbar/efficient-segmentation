@@ -185,7 +185,7 @@ class dSolver(object):
         self.optim_args = optim_args_merged
         self.optim = optim
         self.loss_func = loss_func
-        self.ignore_background=ignore_background
+        self.ignore_background=int(ignore_background)
         self.C = C
 
         self._reset_histories()
@@ -199,7 +199,7 @@ class dSolver(object):
         one_hot.scatter_(1, targets_extend, 1)
 #         if self.ignore_background:
 #             one_hot = one_hot[:, 1:]
-        one_hot = one_hot[:, int(self.ignore_background):]
+        one_hot = one_hot[:, self.ignore_background:]
         return one_hot
 
     def _reset_histories(self):
@@ -343,7 +343,7 @@ class cSolver(object):
         self.optim = optim
         self.loss_func = loss_func
         self.dice_loss = Dice_Loss()
-        self.ignore_background = ignore_background
+        self.ignore_background = int(ignore_background)
         self.C = C
 
         self._reset_histories()
@@ -357,7 +357,7 @@ class cSolver(object):
         one_hot.scatter_(1, targets_extend, 1)
 #         if self.ignore_background:
 #             one_hot = one_hot[:, 1:]
-        one_hot = one_hot[:, int(self.ignore_background):]
+        one_hot = one_hot[:, self.ignore_background:]
             
         return one_hot
 
