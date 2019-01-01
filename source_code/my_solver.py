@@ -199,8 +199,7 @@ class dSolver(object):
         one_hot.scatter_(1, targets_extend, 1)
 #         if self.ignore_background:
 #             one_hot = one_hot[:, 1:]
-        if self.ignore_background:
-            one_hot = one_hot[:, 1:]
+        one_hot = one_hot[:, int(self.ignore_background):]
         return one_hot
 
     def _reset_histories(self):
@@ -358,8 +357,7 @@ class cSolver(object):
         one_hot.scatter_(1, targets_extend, 1)
 #         if self.ignore_background:
 #             one_hot = one_hot[:, 1:]
-        if self.ignore_background:
-            one_hot = one_hot[:, 1:]
+        one_hot = one_hot[:, int(self.ignore_background):]
             
         return one_hot
 
