@@ -358,7 +358,7 @@ class cSolver(object):
         one_hot.scatter_(1, targets_extend, 1)
 #         if self.ignore_background:
 #             one_hot = one_hot[:, 1:]
-        one_hot = one_hot[:, self.ignore_background:]
+        one_hot = one_hot[:, 1:]
             
         return one_hot
 
