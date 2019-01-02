@@ -11,13 +11,13 @@ class Dice_Loss(torch.nn.Module):
         self.smooth = smooth
         
     def forward(self, input, target):
-        print("input", input.shape, "target", target.shape)
+#         print("input", input.shape, "target", target.shape)
         input = torch.sigmoid(input)
         smooth = self.smooth
 
         iflat = input.view(-1)
         tflat = target.view(-1)
-        print("iflat", iflat.shape, "tflat", tflat.shape)
+#         print("iflat", iflat.shape, "tflat", tflat.shape)
         intersection_mask = iflat * tflat
         intersection = (intersection_mask).sum()
 
@@ -358,7 +358,7 @@ class cSolver(object):
         one_hot.scatter_(1, targets_extend, 1)
 #         if self.ignore_background:
 #             one_hot = one_hot[:, 1:]
-        one_hot = one_hot[:, 1:]
+        one_hot = one_hot[:, self.ignore_background:]
             
         return one_hot
 
