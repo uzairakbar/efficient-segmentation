@@ -18,7 +18,8 @@ class Dice_Loss(torch.nn.Module):
         iflat = input.view(-1)
         tflat = target.view(-1)
         print("iflat", iflat.shape, "tflat", tflat.shape)
-        intersection = (iflat * tflat).sum()
+        intersection_mask = iflat * tflat
+        intersection = (intersection_mask).sum()
 
         return 1 - ((2. * intersection + smooth) /
                   (iflat.sum() + tflat.sum() + smooth))
