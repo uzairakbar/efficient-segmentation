@@ -162,17 +162,17 @@ class FCN32s(nn.Module):
                 l2.weight.data = l1.weight.data
                 l2.bias.data = l1.bias.data
                 # weights freezed here!!!
-                l2.weight.requires_grad = False
-                l2.bias.requires_grad = False
+#                 l2.weight.requires_grad = False
+#                 l2.bias.requires_grad = False
 
         for i, name in zip([0, 3], ['fc6', 'fc7']):
             l1 = vgg16.classifier[i]
             l2 = getattr(self, name)
             l2.weight.data = l1.weight.data.view(l2.weight.size())
             l2.bias.data = l1.bias.data.view(l2.bias.size())
-            if(name == 'fc6'):
-                l2.weight.requires_grad = False
-                l2.bias.requires_grad = False
+#             if(name == 'fc6'):
+#                 l2.weight.requires_grad = False
+#                 l2.bias.requires_grad = False
 
 
         return None
