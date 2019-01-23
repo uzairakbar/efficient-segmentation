@@ -89,7 +89,7 @@ def label_img_to_rgb(label_img):
 class SegmentationData(data.Dataset):
 
     def __init__(self, image_paths_file, train=True, rotation='constrained', crop_size=240, crop_style='center', debug=False,
-                 mu=[0.6353146 , 0.6300146 , 0.52398586], std=[0.3769369 , 0.36186826, 0.36188436]):
+                 mu=[0.2570774 , 0.2490484 , 0.23996483], std=[0.26411407, 0.25777323, 0.27034829]):
         self.root_dir_name = os.path.dirname(image_paths_file)
         self.train = train
         self.rotation = rotation
