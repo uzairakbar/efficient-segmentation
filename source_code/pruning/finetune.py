@@ -15,9 +15,9 @@ from operator import itemgetter
 from heapq import nsmallest
 import time
 
-class ModifiedVGG16Model(torch.nn.Module):
+class VGG32s(torch.nn.Module):
 	def __init__(self):
-		super(ModifiedVGG16Model, self).__init__()
+		super(VGG32s, self).__init__()
 
 		model = models.vgg16(pretrained=True)
 		self.features = model.features

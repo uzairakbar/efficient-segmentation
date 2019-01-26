@@ -10,17 +10,22 @@ class DiceLoss(torch.nn.Module):
         super(DiceLoss,self).__init__()
         self.smooth = smooth
         self.m = torch.nn.Softmax(dim=1)
+        # t = torch.ones([1, C, 20, 20])
+        # if ignore_background:
+        #     t[:, 0, :, :] = 0.0
+        # self.ignore = t.contiguous().view(-1)
+        # if torch.cuda.is_available():
+        #     self.ignore.cuda()
 
     def forward(self, input, target):
         # input = torch.sigmoid(input)
         smooth = self.smooth
 
-        iflat = self.m(input).contiguous().view(-1)
-        tflat = target.contiguous().view(-1)
+        iflat = self.m(input).contiguous().view(-1)# * self.ignore
+        tflat = target.contiguous().view(-1)# * self.ignore
 
         intersection_mask = iflat * tflat
 
-        intersection = 0
         intersection = intersection_mask.sum()
 
         return 1 - ((2. * intersection + smooth) /
@@ -34,18 +39,14 @@ class Solver(object):
                          "weight_decay": 0.0}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
-                 loss_func=torch.nn.CrossEntropyLoss(), C=23):
+                 loss_func=torch.nn.CrossEntropyLoss(), C=24):
         optim_args_merged = self.default_adam_args.copy()
         optim_args_merged.update(optim_args)
         self.optim_args = optim_args_merged
         self.optim = optim
         self.loss_func = loss_func
-        self.dice_loss = DiceLoss()
         self.C = C
-        if C<24:
-            self.ignore_background = True
-        else:
-            self.ignore_background = False
+        self.dice_loss = DiceLoss()
 
         self._reset_histories()
 
@@ -54,8 +55,8 @@ class Solver(object):
         targets_extend.unsqueeze_(1)
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         one_hot.scatter_(1, targets_extend, 1)
-        if self.ignore_background:
-            one_hot = one_hot[:, :-1]
+        # if self.ignore_background:
+        #     one_hot = one_hot[:, :-1]
 
         return one_hot
 
