@@ -3,13 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 import torchvision.models.inception as i3
-from .fcn32s import get_upsampling_weight
+from .vggFCN import get_upsampling_weight
 
-class LeNetFCN8s(nn.Module):
+class LeNet8s(nn.Module):
 
     def __init__(self, num_classes=1000, transform_input=False,
-                mu=[0.6353146 , 0.6300146 , 0.52398586], std=[0.3769369 , 0.36186826, 0.36188436]):
-        super(LeNetFCN8s, self).__init__()
+                mu=[0.2570774 , 0.2490484 , 0.23996483], std=[0.26411407, 0.25777323, 0.27034829]):
+        super(LeNet8s, self).__init__()
         self.mu = mu
         self.std = std
         self.transform_input = transform_input
@@ -29,21 +29,24 @@ class LeNetFCN8s(nn.Module):
         self.Mixed_7a = i3.InceptionD(768)
         self.Mixed_7b = i3.InceptionE(1280)
         self.Mixed_7c = i3.InceptionE(2048)
-        
+
         # OTHER GUYS
         self.score_fr8 = nn.Conv2d(288, num_classes, 1)
         self.score_fr16 = nn.Conv2d(768, num_classes, 1)
         self.score_fr32 = nn.Conv2d(2048, num_classes, 1)
-        self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8, bias=False)
-        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 3, stride=2, bias=False)
-        self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 32, stride=8, bias=False)
-        
+        self.relu_fr8 = nn.ReLU(inplace=True)
+        self.relu_fr16 = nn.ReLU(inplace=True)
+        self.relu_fr32 = nn.ReLU(inplace=True)
+        self.upscore32 = nn.ConvTranspose2d(num_classes, num_classes, 8, stride=2)
+        self.upscore16 = nn.ConvTranspose2d(num_classes, num_classes, 14, stride=2)
+        self.upscore8 = nn.ConvTranspose2d(num_classes, num_classes, 32, stride=9)
+
         # some drops here
         self.dropA = nn.Dropout2d(p=0.2)
         self.dropB = nn.Dropout2d(p=0.2)
-        
+
         for m in self.modules():
-            if isinstance(m, nn.Conv2d):# or 
+            if isinstance(m, nn.Conv2d):# or
                 torch.nn.init.xavier_normal_(m.weight, gain=2)
             elif isinstance(m, nn.Linear):
                 print("ABORT! ABORT! NOT FULLY CONVOLUTIONAL!!!")
@@ -63,13 +66,13 @@ class LeNetFCN8s(nn.Module):
 #         print("input size", x.shape)
 
         # MY VALUES
-        
+
         if self.transform_input:
             x_ch0 = torch.unsqueeze(x[:, 0], 1) * (self.std[0] / 0.5) + (self.mu[0] - 0.5) / 0.5
             x_ch1 = torch.unsqueeze(x[:, 1], 1) * (self.std[0] / 0.5) + (self.mu[1] - 0.5) / 0.5
             x_ch2 = torch.unsqueeze(x[:, 2], 1) * (self.std[0] / 0.5) + (self.mu[2] - 0.5) / 0.5
             x = torch.cat((x_ch0, x_ch1, x_ch2), 1)
-            
+
         # 299 x 299 x 3
         x = self.Conv2d_1a_3x3(x)                       # 111.5 x 111.5 x 32
         # 149 x 149 x 32
@@ -112,32 +115,38 @@ class LeNetFCN8s(nn.Module):
         x = self.Mixed_7b(x)                            # 5.65625 x 5.65625 x 2048
         # 8 x 8 x 2048
         x = self.Mixed_7c(x)                            # 5.65625 x 5.65625 x 2048
-        
+
         x = self.dropB(x)               # DROPOUT!
         x32 = x
         # 8 x 8 x 2048
 #         print("32s", x.shape)
         ### MY OWN SHIT
-        
-        x8 = self.score_fr8(x8)
-        x16 = self.score_fr16(x16)
-        x32 = self.score_fr32(x32)
+
+        x8 = self.relu_fr8(self.score_fr8(x8))
+        x16 = self.relu_fr16(self.score_fr16(x16))
+        x32 = self.relu_fr32(self.score_fr32(x32))
         # NOT MINE NOT MINE
         x = x32
         x = self.upscore32(x)                         # 8.65625 x 8.65625 x 768         ## 14 x 14 x numC
 #         print("deco1", x.shape)
-        x16 = x16[:, :, 0:0 + x.size()[2], 0:0 + x.size()[3]]
+        pad2_16 = int((x.size()[2] - x16.size()[2])/2)
+        pad3_16 = int((x.size()[3] - x16.size()[3])/2)
+        x = x[:, :, pad2_16:pad2_16+x16.size()[2], pad3_16:pad3_16+x16.size()[3]]
         x = x + x16
         x = self.upscore16(x)                        # 10.65625 x 10.65625 x 288        ## 28 x 28 x numC
 #         print("deco2", x.shape)
-        x8 = x8[:, :, 0:0 + x.size()[2], 0:0 + x.size()[3]]
+        pad2_8 = int((x.size()[2] - x8.size()[2])/2)
+        pad3_8 = int((x.size()[3] - x8.size()[3])/2)
+        x = x[:, :, pad2_8:pad2_8+x8.size()[2], pad3_8:pad3_8+x8.size()[3]]
         x = x + x8
         x = self.upscore8(x)                         # 109.25 x 109.25 x num_classes    ## 224 x 224 x numC
 #         print("deco3", x.shape)
-        x = x[:, :, 0:0 + input.size()[2], 0:0 + input.size()[3]]
+        pad2_out = int((x.size()[2] - input.size()[2])/2)
+        pad3_out = int((x.size()[3] - input.size()[3])/2)
+        x = x[:, :, pad2_out:pad2_out+input.size()[2], pad3_out:pad3_out+input.size()[3]].contiguous()
 #         print("output", x.shape)
         return x
-    
+
     def copy_params_from_leNet(self, leNet):
         selfFeatures = [
             self.Conv2d_1a_3x3,
@@ -158,7 +167,7 @@ class LeNetFCN8s(nn.Module):
             self.Mixed_7b,
             self.Mixed_7c
         ]
-        
+
         leNetFeatures = [
             leNet.Conv2d_1a_3x3,
             leNet.Conv2d_2a_3x3,
@@ -178,10 +187,10 @@ class LeNetFCN8s(nn.Module):
             leNet.Mixed_7b,
             leNet.Mixed_7c
         ]
-        
+
         for l1, l2 in zip(leNetFeatures, selfFeatures):
             if isinstance(l1, type(l2)):
-                l2.load_state_dict(l1.state_dict())           
+                l2.load_state_dict(l1.state_dict())
 
     def save(self, path):
         """
