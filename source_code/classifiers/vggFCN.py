@@ -362,40 +362,60 @@ class VGG8s(VGG32s):
 
 from torchvision import models
 
-class VGG32sPrune(VGG32s):
+class VGG32sPrune(nn.Module):
     def __init__(self, n_class=24):
-        super(VGG32sPrune, self).__init__(n_class=n_class)
+        super(VGG32sPrune, self).__init__()
         # model = models.vgg16(pretrained=False)
         # self.features = model.features
 
-        self.features = nn.Sequential(self.conv1_1, self.relu1_1,
-                                      self.conv1_2, self.relu1_2,
-                                      self.pool1,
-                                      self.conv2_1, self.relu2_1,
-                                      self.conv2_2, self.relu2_2,
-                                      self.pool2,
-                                      self.conv3_1, self.relu3_1,
-                                      self.conv3_2, self.relu3_2,
-                                      self.conv3_3, self.relu3_3,
-                                      self.pool3,
-                                      self.conv4_1, self.relu4_1,
-                                      self.conv4_2, self.relu4_2,
-                                      self.conv4_3, self.relu4_3,
-                                      self.pool4,
-                                      self.conv5_1, self.relu5_1,
-                                      self.conv5_2, self.relu5_2,
-                                      self.conv5_3, self.relu5_3,
-                                      self.pool5)
+        self.features = nn.Sequential(nn.Conv2d(3, 64, 3, padding=100),
+                                      nn.ReLU(inplace=True),
+                                      nn.Conv2d(64, 64, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.MaxPool2d(2, stride=2, ceil_mode=True),
+                                      
+                                      nn.Conv2d(64, 128, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.Conv2d(128, 128, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.MaxPool2d(2, stride=2, ceil_mode=True),
+                                      
+                                      nn.Conv2d(128, 256, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.Conv2d(256, 256, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.Conv2d(256, 256, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.MaxPool2d(2, stride=2, ceil_mode=True),
+                                      
+                                      nn.Conv2d(256, 512, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.Conv2d(512, 512, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.Conv2d(512, 512, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.MaxPool2d(2, stride=2, ceil_mode=True),
+                                      
+                                      nn.Conv2d(512, 512, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.Conv2d(512, 512, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.Conv2d(512, 512, 3, padding=1),
+                                      nn.ReLU(inplace=True),
+                                      nn.MaxPool2d(2, stride=2, ceil_mode=True))
 
-        self.segmenter = nn.Sequential(self.fc6,
-                                       self.relu6,
-                                       self.drop6,
-                                       self.fc7,
-                                       self.relu7,
-                                       self.drop7,
-                                       self.score_fr,
-                                       self.relu_fr,
-                                       self.upscore)
+        self.segmenter = nn.Sequential(nn.Conv2d(512, 4096, 7),
+                                       nn.ReLU(inplace=True),
+                                       nn.Dropout2d(p=0.2),
+                                       
+                                       nn.Conv2d(4096, 4096, 1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Dropout2d(p=0.2),
+                                       
+                                       nn.Conv2d(4096, n_class, 1),
+                                       nn.ReLU(inplace=True),
+                                       
+                                       nn.ConvTranspose2d(n_class, n_class, 64, stride=32))
 
         self._initialize_weights()
         self.copy_params_from_vgg16()
@@ -418,6 +438,17 @@ class VGG32sPrune(VGG32s):
             l2.bias.data = l1.bias.data.view(l2.bias.size())
 
         return
+    
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                torch.nn.init.xavier_normal_(m.weight, gain=2)
+                # torch.nn.init.xavier_normal_(m.bias, gain=2)
+            if isinstance(m, nn.ConvTranspose2d):
+                assert m.kernel_size[0] == m.kernel_size[1]
+                initial_weight = get_upsampling_weight(
+                    m.in_channels, m.out_channels, m.kernel_size[0])
+                m.weight.data.copy_(initial_weight)
 
     def forward(self, x):
         h = self.features(x)
@@ -427,3 +458,72 @@ class VGG32sPrune(VGG32s):
         pad3_out = int((h.size()[3] - x.size()[3])/2)
         h = h[:, :, pad2_out:pad2_out+x.size()[2], pad3_out:pad3_out+x.size()[3]].contiguous()
         return h
+
+
+
+
+# class VGG32sPrune(VGG32s):
+#     def __init__(self, n_class=24):
+#         super(VGG32sPrune, self).__init__(n_class=n_class)
+#         # model = models.vgg16(pretrained=False)
+#         # self.features = model.features
+
+#         self.features = nn.Sequential(self.conv1_1, self.relu1_1,
+#                                       self.conv1_2, self.relu1_2,
+#                                       self.pool1,
+#                                       self.conv2_1, self.relu2_1,
+#                                       self.conv2_2, self.relu2_2,
+#                                       self.pool2,
+#                                       self.conv3_1, self.relu3_1,
+#                                       self.conv3_2, self.relu3_2,
+#                                       self.conv3_3, self.relu3_3,
+#                                       self.pool3,
+#                                       self.conv4_1, self.relu4_1,
+#                                       self.conv4_2, self.relu4_2,
+#                                       self.conv4_3, self.relu4_3,
+#                                       self.pool4,
+#                                       self.conv5_1, self.relu5_1,
+#                                       self.conv5_2, self.relu5_2,
+#                                       self.conv5_3, self.relu5_3,
+#                                       self.pool5)
+
+#         self.segmenter = nn.Sequential(self.fc6,
+#                                        self.relu6,
+#                                        self.drop6,
+#                                        self.fc7,
+#                                        self.relu7,
+#                                        self.drop7,
+#                                        self.score_fr,
+#                                        self.relu_fr,
+#                                        self.upscore)
+
+#         self._initialize_weights()
+#         self.copy_params_from_vgg16()
+
+#     def copy_params_from_vgg16(self, vgg16=None):
+#         if vgg16 is None:
+#             vgg16 = models.vgg16(pretrained=True)
+
+#         for l1, l2 in zip(vgg16.features, self.features):
+#             if isinstance(l1, nn.Conv2d) and isinstance(l2, nn.Conv2d):
+#                 assert l1.weight.size() == l2.weight.size()
+#                 assert l1.bias.size() == l2.bias.size()
+#                 l2.weight.data = l1.weight.data
+#                 l2.bias.data = l1.bias.data
+
+#         for i, j in zip([0, 3], [0, 3]):
+#             l1 = vgg16.classifier[i]
+#             l2 = self.segmenter[j]
+#             l2.weight.data = l1.weight.data.view(l2.weight.size())
+#             l2.bias.data = l1.bias.data.view(l2.bias.size())
+
+#         return
+
+#     def forward(self, x):
+#         h = self.features(x)
+#         h = self.segmenter(h)
+
+#         pad2_out = int((h.size()[2] - x.size()[2])/2)
+#         pad3_out = int((h.size()[3] - x.size()[3])/2)
+#         h = h[:, :, pad2_out:pad2_out+x.size()[2], pad3_out:pad3_out+x.size()[3]].contiguous()
+#         return h
