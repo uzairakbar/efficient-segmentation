@@ -355,3 +355,75 @@ class VGG8s(VGG32s):
         pad3_out = int((h.size()[3] - x.size()[3])/2)
         h = h[:, :, pad2_out:pad2_out+x.size()[2], pad3_out:pad3_out+x.size()[3]].contiguous()
         return h
+
+from torchvision import models
+
+class VGG32sPrune(VGG32s):
+    def __init__(self, n_class = 24):
+        super(VGG32sPrune, self).__init__()
+        # model = models.vgg16(pretrained=False)
+        # self.features = model.features
+
+        self.features = nn.Sequential(self.conv1_1, self.relu1_1,
+                                      self.conv1_2, self.relu1_2,
+                                      self.pool1,
+                                      self.conv2_1, self.relu2_1,
+                                      self.conv2_2, self.relu2_2,
+                                      self.pool2,
+                                      self.conv3_1, self.relu3_1,
+                                      self.conv3_2, self.relu3_2,
+                                      self.conv3_3, self.relu3_3,
+                                      self.pool3,
+                                      self.conv4_1, self.relu4_1,
+                                      self.conv4_2, self.relu4_2,
+                                      self.conv4_3, self.relu4_3,
+                                      self.pool4,
+                                      self.conv5_1, self.relu5_1,
+                                      self.conv5_2, self.relu5_2,
+                                      self.conv5_3, self.relu5_3,
+                                      self.pool5)
+
+        for param in self.features.parameters():
+        	param.requires_grad = False
+
+        self.segmenter = nn.Sequential(nn.Dropout2d(p=0.15),
+                                       nn.Conv2d(512, 4096, 7),
+                                       nn.ReLU(inplace=True),
+                                       nn.Dropout2d(p=0.15),
+                                       nn.Conv2d(4096, 4096, 1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Dropout2d(p=0.15),
+                                       nn.Conv2d(4096, n_class, 1),
+                                       nn.ReLU(inplace=True),
+                                       nn.ConvTranspose2d(n_class, n_class, 64, stride=32))
+
+        self._initialize_weights()
+        self.copy_params_from_vgg16()
+
+    def copy_params_from_vgg16(self, vgg16=None):
+        if vgg16 is None:
+            vgg16 = models.vgg16(pretrained=True)
+        
+        for l1, l2 in zip(vgg16.features, self.features):
+            if isinstance(l1, nn.Conv2d) and isinstance(l2, nn.Conv2d):
+                assert l1.weight.size() == l2.weight.size()
+                assert l1.bias.size() == l2.bias.size()
+                l2.weight.data = l1.weight.data
+                l2.bias.data = l1.bias.data
+
+        for i, j in zip([0, 3], [1, 4]):
+            l1 = vgg16.classifier[i]
+            l2 = self.segmenter[j]
+            l2.weight.data = l1.weight.data.view(l2.weight.size())
+            l2.bias.data = l1.bias.data.view(l2.bias.size())
+
+        return
+
+    def forward(self, x):
+        h = self.features(x)
+        h = self.segmenter(h)
+
+        pad2_out = int((h.size()[2] - x.size()[2])/2)
+        pad3_out = int((h.size()[3] - x.size()[3])/2)
+        h = h[:, :, pad2_out:pad2_out+x.size()[2], pad3_out:pad3_out+x.size()[3]].contiguous()
+        return h
