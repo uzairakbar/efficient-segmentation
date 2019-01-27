@@ -458,6 +458,23 @@ class VGG32sPrune(nn.Module):
         pad3_out = int((h.size()[3] - x.size()[3])/2)
         h = h[:, :, pad2_out:pad2_out+x.size()[2], pad3_out:pad3_out+x.size()[3]].contiguous()
         return h
+    
+    def save(self, path):
+        """
+        Save model with its parameters to the given path. Conventionally the
+        path should end with "*.model".
+        Inputs:
+        - path: path string
+        """
+        print('Saving model... %s' % path)
+        torch.save(self, path)
+
+    @property
+    def is_cuda(self):
+        """
+        Check if model parameters are allocated on the GPU.
+        """
+        return next(self.parameters()).is_cuda
 
 
 
