@@ -359,8 +359,8 @@ class VGG8s(VGG32s):
 from torchvision import models
 
 class VGG32sPrune(VGG32s):
-    def __init__(self, n_class = 24):
-        super(VGG32sPrune, self).__init__()
+    def __init__(self, n_class=24):
+        super(VGG32sPrune, self).__init__(n_class=n_class)
         # model = models.vgg16(pretrained=False)
         # self.features = model.features
 
@@ -383,19 +383,15 @@ class VGG32sPrune(VGG32s):
                                       self.conv5_3, self.relu5_3,
                                       self.pool5)
 
-        for param in self.features.parameters():
-        	param.requires_grad = False
-
-        self.segmenter = nn.Sequential(nn.Dropout2d(p=0.15),
-                                       nn.Conv2d(512, 4096, 7),
-                                       nn.ReLU(inplace=True),
-                                       nn.Dropout2d(p=0.15),
-                                       nn.Conv2d(4096, 4096, 1),
-                                       nn.ReLU(inplace=True),
-                                       nn.Dropout2d(p=0.15),
-                                       nn.Conv2d(4096, n_class, 1),
-                                       nn.ReLU(inplace=True),
-                                       nn.ConvTranspose2d(n_class, n_class, 64, stride=32))
+        self.segmenter = nn.Sequential(self.fc6,
+                                       self.relu6,
+                                       self.drop6,
+                                       self.fc7,
+                                       self.relu7,
+                                       self.drop7,
+                                       self.score_fr,
+                                       self.relu_fr,
+                                       self.upscore)
 
         self._initialize_weights()
         self.copy_params_from_vgg16()
@@ -403,7 +399,7 @@ class VGG32sPrune(VGG32s):
     def copy_params_from_vgg16(self, vgg16=None):
         if vgg16 is None:
             vgg16 = models.vgg16(pretrained=True)
-        
+
         for l1, l2 in zip(vgg16.features, self.features):
             if isinstance(l1, nn.Conv2d) and isinstance(l2, nn.Conv2d):
                 assert l1.weight.size() == l2.weight.size()
