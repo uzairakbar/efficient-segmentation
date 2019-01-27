@@ -407,7 +407,7 @@ class VGG32sPrune(VGG32s):
                 l2.weight.data = l1.weight.data
                 l2.bias.data = l1.bias.data
 
-        for i, j in zip([0, 3], [1, 4]):
+        for i, j in zip([0, 3], [0, 3]):
             l1 = vgg16.classifier[i]
             l2 = self.segmenter[j]
             l2.weight.data = l1.weight.data.view(l2.weight.size())
