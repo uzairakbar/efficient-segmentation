@@ -125,7 +125,8 @@ class VGG32s(nn.Module):
         h = self.relu7(self.fc7(h))
         h = self.drop7(h)
 
-        h = self.relu_fr(self.score_fr(h))
+#         h = self.relu_fr(self.score_fr(h))
+        h = self.score_fr(h)
 
         h = self.upscore(h)
         pad2_out = int((h.size()[2] - x.size()[2])/2)
@@ -332,9 +333,12 @@ class VGG8s(VGG32s):
         h = self.drop7(h)
         h32 = h
 
-        h8 = self.relu_fr8(self.score_fr8(h8 * 0.0001))
-        h16 = self.relu_fr16(self.score_fr16(h16 * 0.01))
-        h32 = self.relu_fr16(self.score_fr32(h32))
+#         h8 = self.relu_fr8(self.score_fr8(h8 * 0.0001))
+#         h16 = self.relu_fr16(self.score_fr16(h16 * 0.01))
+#         h32 = self.relu_fr16(self.score_fr32(h32))
+        h8 = self.score_fr8(h8 * 0.0001)
+        h16 = self.score_fr16(h16 * 0.01)
+        h32 = self.score_fr32(h32)
 
         h = h32
         h = self.upscore32(h)
