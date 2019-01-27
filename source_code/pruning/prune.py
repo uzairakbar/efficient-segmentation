@@ -18,7 +18,7 @@ def prune_vgg16_conv_layer(model, layer_index, filter_index):
     while layer_index + offset <  len(model.features._modules.items()):
         res =  model.features._modules.items()[layer_index+offset]
         if isinstance(res[1], torch.nn.modules.conv.Conv2d):
-        	next_name, next_conv = res
+            next_name, next_conv = res
             break
         offset = offset + 1
 
