@@ -336,8 +336,8 @@ class VGG8s(VGG32s):
 #         h8 = self.relu_fr8(self.score_fr8(h8 * 0.0001))
 #         h16 = self.relu_fr16(self.score_fr16(h16 * 0.01))
 #         h32 = self.relu_fr16(self.score_fr32(h32))
-        h8 = self.score_fr8(h8 * 0.0001)
-        h16 = self.score_fr16(h16 * 0.01)
+        h8 = self.score_fr8(h8 * 0.01)
+        h16 = self.score_fr16(h16 * 0.1)
         h32 = self.score_fr32(h32)
 
         h = h32
