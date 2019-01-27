@@ -4,6 +4,14 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
+def one_hot(targets, C=24):
+    targets_extend = targets.clone()
+    targets_extend.unsqueeze_(1)
+    one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
+    one_hot.scatter_(1, targets_extend, 1)
+
+    return one_hot
+
 class DiceLoss(torch.nn.Module):
 
     def __init__(self, smooth=1.):
@@ -349,8 +357,13 @@ class dSolver(object):
         return val_acc
 
 class cSolver(object):
+    # default_adam_args = {"lr": 1e-4,
+    #                     "momentum":0.99}
+
     default_adam_args = {"lr": 1e-4,
-                        "momentum":0.99}
+                         "betas": (0.9, 0.999),
+                         "eps": 1e-8,
+                         "weight_decay": 0.0}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
                  loss_func=torch.nn.CrossEntropyLoss(), C=24):
