@@ -297,11 +297,12 @@ class dSolver(object):
             train_acc = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
             self.train_acc_history.append(train_acc)
             if log_nth:
-                print('[Epoch %d/%d] VAL   acc/IoU/loss: %.3f / %.3f / %.3f' % (epoch + 1,
+                print('[Epoch %d/%d] TRAIN acc/IoU/loss: %.3f / %.3f / %.3f' % (epoch + 1,
                                                                    num_epochs,
-                                                                   val_acc,
-                                                                   val_dice,
-                                                                   val_loss))
+                                                                   train_acc,
+                                                                   train_dice,
+                                                                   train_loss))
+
             # VALIDATION
             val_losses = []
             val_scores = []
@@ -467,11 +468,11 @@ class cSolver(object):
             train_acc = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
             self.train_acc_history.append(train_acc)
             if log_nth:
-                print('[Epoch %d/%d] VAL   acc/IoU/loss: %.3f / %.3f / %.3f' % (epoch + 1,
+                print('[Epoch %d/%d] TRAIN acc/IoU/loss: %.3f / %.3f / %.3f' % (epoch + 1,
                                                                    num_epochs,
-                                                                   val_acc,
-                                                                   val_dice,
-                                                                   val_loss))
+                                                                   train_acc,
+                                                                   train_dice,
+                                                                   train_loss))
             # VALIDATION
             val_losses = []
             val_scores = []
