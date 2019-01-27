@@ -112,10 +112,10 @@ class Solver(object):
                 loss.backward()
                 optim.step()
 
-                d_score = 1 - self.dice_loss(outputs, OHtargets)
+                d_score = 1 - self.dice_loss(outputs, OHtargets).data.cpu().numpy()
 
                 self.train_loss_history.append(loss.data.cpu().numpy())
-                self.train_dice_history.append(d_score.data.cpu().numpy())
+                self.train_dice_history.append(d_score)
                 if log_nth and i % log_nth == 0:
                     last_log_nth_losses = self.train_loss_history[-log_nth:]
                     train_loss = np.mean(last_log_nth_losses)
@@ -151,10 +151,10 @@ class Solver(object):
                     loss += self.loss_func(outputs[s].view(self.C, -1).transpose(1, 0), targets[s].view(-1))
                 loss /= inputs.size()[0]
 
-                d_score = 1 - self.dice_loss(outputs, OHtargets)
+                d_score = 1 - self.dice_loss(outputs, OHtargets).data.cpu().numpy()
 
                 val_losses.append(loss.data.cpu().numpy())
-                val_dices.append(d_score.data.cpu().numpy())
+                val_dices.append(d_score)
 
                 _, preds = torch.max(outputs, 1)
 
@@ -190,17 +190,13 @@ class dSolver(object):
                          "weight_decay": 0.0}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
-                 loss_func=torch.nn.CrossEntropyLoss(), C=24):
+                 loss_func=DiceLoss(), C=24):
         optim_args_merged = self.default_adam_args.copy()
         optim_args_merged.update(optim_args)
         self.optim_args = optim_args_merged
         self.optim = optim
         self.loss_func = loss_func
         self.C = C
-        if C<24:
-            self.ignore_background = True
-        else:
-            self.ignore_background = False
 
         self._reset_histories()
 
@@ -209,8 +205,6 @@ class dSolver(object):
         targets_extend.unsqueeze_(1)
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         one_hot.scatter_(1, targets_extend, 1)
-        if self.ignore_background:
-            one_hot = one_hot[:, :-1]
 
         return one_hot
 
@@ -220,8 +214,10 @@ class dSolver(object):
         """
         self.train_loss_history = []
         self.train_acc_history = []
+        self.train_dice_history = []
         self.val_acc_history = []
         self.val_loss_history = []
+        self.val_dice_history = []
 
     def train(self, model, train_loader, val_loader, num_epochs=10, log_nth=0):
         """
@@ -283,15 +279,16 @@ class dSolver(object):
                 loss.backward()
                 optim.step()
 
+                d_score = 1 - loss.data.cpu().numpy()
+
                 self.train_loss_history.append(loss.data.cpu().numpy())
+                self.train_dice_history.append(d_score)
                 if log_nth and i % log_nth == 0:
                     last_log_nth_losses = self.train_loss_history[-log_nth:]
                     train_loss = np.mean(last_log_nth_losses)
 
-                    # print('[Iteration %d/%d] TRAIN loss: %.3f' % \
-                    #     (i + epoch * iter_per_epoch,
-                    #      iter_per_epoch * num_epochs,
-                    #      train_loss))
+                    last_log_nth_dice = self.train_dice_history[-log_nth:]
+                    train_dice = np.mean(last_log_nth_dice)
 
             _, preds = torch.max(outputs, 1)
 
@@ -300,13 +297,15 @@ class dSolver(object):
             train_acc = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
             self.train_acc_history.append(train_acc)
             if log_nth:
-                print('[Epoch %d/%d] TRAIN acc/loss: %.3f/%.3f' % (epoch + 1,
+                print('[Epoch %d/%d] VAL   acc/IoU/loss: %.3f / %.3f / %.3f' % (epoch + 1,
                                                                    num_epochs,
-                                                                   train_acc,
-                                                                   train_loss))
+                                                                   val_acc,
+                                                                   val_dice,
+                                                                   val_loss))
             # VALIDATION
             val_losses = []
             val_scores = []
+            val_dices = []
             model.eval()
             for inputs, targets in val_loader:
 
@@ -320,6 +319,9 @@ class dSolver(object):
                 loss = self.loss_func(outputs, OHtargets)
                 val_losses.append(loss.data.cpu().numpy())
 
+                d_score = 1 - loss.data.cpu().numpy()
+                val_dices.append(d_score)
+
                 _, preds = torch.max(outputs, 1)
 
                 # Only allow images/pixels with target >= 0 e.g. for segmentation
@@ -328,13 +330,15 @@ class dSolver(object):
                 val_scores.append(scores)
 
             model.train()
-            val_acc, val_loss = np.mean(val_scores), np.mean(val_losses)
+            val_acc, val_loss, val_dice = np.mean(val_scores), np.mean(val_losses), np.mean(val_dices)
             self.val_acc_history.append(val_acc)
             self.val_loss_history.append(val_loss)
+            self.val_dice_history.append(val_dice)
             if log_nth:
-                print('[Epoch %d/%d] VAL   acc/loss: %.3f/%.3f' % (epoch + 1,
+                print('[Epoch %d/%d] VAL   acc/IoU/loss: %.3f / %.3f / %.3f' % (epoch + 1,
                                                                    num_epochs,
                                                                    val_acc,
+                                                                   val_dice,
                                                                    val_loss))
 
         ########################################################################
@@ -348,7 +352,7 @@ class cSolver(object):
                         "momentum":0.99}
 
     def __init__(self, optim=torch.optim.Adam, optim_args={},
-                 loss_func=torch.nn.CrossEntropyLoss(), ignore_background=False, C=24):
+                 loss_func=torch.nn.CrossEntropyLoss(), C=24):
         optim_args_merged = self.default_adam_args.copy()
         optim_args_merged.update(optim_args)
         self.optim_args = optim_args_merged
@@ -356,10 +360,6 @@ class cSolver(object):
         self.loss_func = loss_func
         self.dice_loss = DiceLoss()
         self.C = C
-        if C<24:
-            self.ignore_background = True
-        else:
-            self.ignore_background = False
 
         self._reset_histories()
 
@@ -368,8 +368,6 @@ class cSolver(object):
         targets_extend.unsqueeze_(1)
         one_hot = torch.FloatTensor(targets_extend.size(0), C, targets_extend.size(2), targets_extend.size(3)).zero_()
         one_hot.scatter_(1, targets_extend, 1)
-        if self.ignore_background:
-            one_hot = one_hot[:, :-1]
 
         return one_hot
 
@@ -379,8 +377,10 @@ class cSolver(object):
         """
         self.train_loss_history = []
         self.train_acc_history = []
+        self.train_dice_history = []
         self.val_acc_history = []
         self.val_loss_history = []
+        self.val_dice_history = []
 
     def train(self, model, train_loader, val_loader, num_epochs=10, log_nth=0):
         """
@@ -449,15 +449,16 @@ class cSolver(object):
                 loss.backward()
                 optim.step()
 
+                d_score = 1 - loss2.data.cpu().numpy()
+
+                self.train_dice_history.append(d_score)
                 self.train_loss_history.append(loss.data.cpu().numpy())
                 if log_nth and i % log_nth == 0:
                     last_log_nth_losses = self.train_loss_history[-log_nth:]
                     train_loss = np.mean(last_log_nth_losses)
 
-                    # print('[Iteration %d/%d] TRAIN loss: %.3f' % \
-                    #     (i + epoch * iter_per_epoch,
-                    #      iter_per_epoch * num_epochs,
-                    #      train_loss))
+                    last_log_nth_dice = self.train_dice_history[-log_nth:]
+                    train_dice = np.mean(last_log_nth_dice)
 
             _, preds = torch.max(outputs, 1)
 
@@ -466,13 +467,15 @@ class cSolver(object):
             train_acc = np.mean((preds == targets)[targets_mask].data.cpu().numpy())
             self.train_acc_history.append(train_acc)
             if log_nth:
-                print('[Epoch %d/%d] TRAIN acc/loss: %.3f/%.3f' % (epoch + 1,
+                print('[Epoch %d/%d] VAL   acc/IoU/loss: %.3f / %.3f / %.3f' % (epoch + 1,
                                                                    num_epochs,
-                                                                   train_acc,
-                                                                   train_loss))
+                                                                   val_acc,
+                                                                   val_dice,
+                                                                   val_loss))
             # VALIDATION
             val_losses = []
             val_scores = []
+            val_dices = []
             model.eval()
             for inputs, targets in val_loader:
 
@@ -494,6 +497,9 @@ class cSolver(object):
 
                 val_losses.append(loss.data.cpu().numpy())
 
+                d_score = 1 - loss2.data.cpu().numpy()
+                val_dices.append(d_score)
+
                 _, preds = torch.max(outputs, 1)
 
                 # Only allow images/pixels with target >= 0 e.g. for segmentation
@@ -502,13 +508,15 @@ class cSolver(object):
                 val_scores.append(scores)
 
             model.train()
-            val_acc, val_loss = np.mean(val_scores), np.mean(val_losses)
+            val_acc, val_loss, val_dice = np.mean(val_scores), np.mean(val_losses), np.mean(val_dices)
             self.val_acc_history.append(val_acc)
             self.val_loss_history.append(val_loss)
+            self.val_dice_history.append(val_dice)
             if log_nth:
-                print('[Epoch %d/%d] VAL   acc/loss: %.3f/%.3f' % (epoch + 1,
+                print('[Epoch %d/%d] VAL   acc/IoU/loss: %.3f / %.3f / %.3f' % (epoch + 1,
                                                                    num_epochs,
                                                                    val_acc,
+                                                                   val_dice,
                                                                    val_loss))
 
         ########################################################################
