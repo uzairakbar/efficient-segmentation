@@ -122,9 +122,12 @@ class LeNet8s(nn.Module):
 #         print("32s", x.shape)
         ### MY OWN SHIT
 
-        x8 = self.relu_fr8(self.score_fr8(x8 * 0.0001))
-        x16 = self.relu_fr16(self.score_fr16(x16 * 0.01))
-        x32 = self.relu_fr32(self.score_fr32(x32))
+#         x8 = self.relu_fr8(self.score_fr8(x8 * 0.0001))
+#         x16 = self.relu_fr16(self.score_fr16(x16 * 0.01))
+#         x32 = self.relu_fr32(self.score_fr32(x32))
+        x8 = self.score_fr8(x8 * 0.0001)
+        x16 = self.score_fr16(x16 * 0.01)
+        x32 = self.score_fr32(x32)
         # NOT MINE NOT MINE
         x = x32
         x = self.upscore32(x)                         # 8.65625 x 8.65625 x 768         ## 14 x 14 x numC
