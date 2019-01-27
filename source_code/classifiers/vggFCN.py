@@ -289,7 +289,7 @@ class VGG8s(VGG32s):
 
         self.upscore32 = nn.ConvTranspose2d(
             n_class, n_class, 4, stride=2)
-        self.upscore_pool16 = nn.ConvTranspose2d(
+        self.upscore16 = nn.ConvTranspose2d(
             n_class, n_class, 4, stride=2)
         self.upscore8 = nn.ConvTranspose2d(
             n_class, n_class, 16, stride=8)
