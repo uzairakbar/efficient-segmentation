@@ -547,6 +547,8 @@ class PruneNet(nn.Module):
         for i, j in zip([0, 3], [-6, -3]):
             l1 = vgg16.classifier[i]
             l2 = self.features[j]
+            assert l1.weight.size() == l2.weight.size()
+            assert l1.bias.size() == l2.bias.size()
             l2.weight.data = l1.weight.data.view(l2.weight.size())
             l2.bias.data = l1.bias.data.view(l2.bias.size())
 
