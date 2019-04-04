@@ -12,4 +12,4 @@ This project lists all of the project deliverables for the TUM project course 'A
 The [MSRC v2](https://www.microsoft.com/en-us/research/project/image-understanding/) dataset for semantic segmentation.
 
 ## Sample (test set) Results
-![segmentation samples](https://drive.google.com/file/d/1E2JrDrejJENqk2UZ6SmFy5SxqLZn5n35/view?usp=sharing?sanitize=true)
+![segmentation samples](https://github.com/uzairakbar/efficient-segmentation/blob/master/deliverables/segmentation_samples.svg?sanitize=true)
